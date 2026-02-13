@@ -1,0 +1,311 @@
+### Get auth token
+### Admin Token: Authorization: Basic YWRtaW46YWRtaW4=
+POST http://localhost:4111/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+### Positive test: Admin can create new user with correct data
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate1997.",
+  "password": "Kate1997@",
+  "role": "USER"
+}
+
+### Positive test: Admin can see the list of users
+GET http://localhost:4111//api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+
+### Negative test: Admin can not create new user with blank username
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "  ",
+  "password": "Kate1997@",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with username 2 characters in username
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kk",
+  "password": "Kate1997@",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with username 16 characters
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate.67891123456",
+  "password": "Kate1997@",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with username @$%^&*()#
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "@$%^&*()#",
+  "password": "Kate1997@",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with blank password
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate_1997",
+  "password": "",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with password shorter than 8 characters
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate_1997",
+  "password": "1234567",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with password without digits
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate_1997",
+  "password": "1234567",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with password without one lower case character
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate1997.",
+  "password": "KATE1997@",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with password without one upper case character
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate1997.",
+  "password": "kate1997@",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with password without one special character
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate1997.",
+  "password": "Kate19977",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with password with spaces
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate1997.",
+  "password": "Kate 1997@",
+  "role": "USER"
+}
+
+### Negative test: Admin can not create new user with role not from list "ADMIN" or "USER"
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate1996.",
+  "password": "Kate1996@",
+  "role": "EDITOR"
+}
+
+
+### Negative test: Admin can not create user that already exists
+POST http://localhost:4111/api/v1/admin/users
+Content-Type: application/json
+Authorization: Basic YWRtaW46YWRtaW4=
+
+{
+  "username": "Kate1998.",
+  "password": "Kate1998@",
+  "role": "USER"
+}
+
+### Positive test: Authorized user can create account
+POST http://localhost:4111/api/v1/accounts
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+### Positive test: check account was created
+GET http://localhost:4111/api/v1/customer/accounts
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+### Positive test: Authorized user can see their accounts
+POST http://localhost:4111/api/v1/customer/accounts
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+### Positive test: Authorized user can deposit up his account
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "id": 2,
+  "balance": 5000
+}
+
+### Negative test: Authorized user can maximum deposit 5000 (bug)
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "id": 2,
+  "balance": 5001
+}
+
+### Negative test: Authorized user can deposit a positive amount
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "id": 2,
+  "balance": -100
+}
+
+###Negative test: Authorized user cannot make deposit to non-existen account
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "id": 5,
+  "balance": 100
+}
+
+###Negative test: Authorized user cannot make deposit into someone else's account
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "id": 1,
+  "balance": 100
+}
+
+### Positive test: Check money has been deposite(user can see the transactions of their accounts)
+GET http://localhost:4111/api/v1/accounts/2/transactions
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+### Positive test: Authorized user can transfer money from one account to another
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "senderAccountId": 2,
+  "receiverAccountId": 1,
+  "amount": 1000
+}
+
+### Negative test: Authorized user can transfer money max 10000(code 200)
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "senderAccountId": 2,
+  "receiverAccountId": 3,
+  "amount": 10001
+}
+
+### Negative test: Authorized user can transfer only positive amount
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "senderAccountId": 2,
+  "receiverAccountId": 3,
+  "amount": -10
+}
+
+### Negative test: Authorized user can transfer amount not exceeding the balance
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTguOkthdGUxOTk4QA==
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 3,
+  "amount": 10000
+}
+
+### Positive test: Authorized user can update name in profile
+PUT http://localhost:4111/api/v1/customer/profile
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTguOkthdGUxOTk4QA==
+
+{
+  "name": "New Name"
+}
+
+### Negative test: Name must consist of two words separated by a space(200)
+PUT http://localhost:4111/api/v1/customer/profile
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTguOkthdGUxOTk4QA==
+
+{
+  "name": "NewName"
+}
+
+### Negative test: Name must contain only letters(200)
+PUT http://localhost:4111/api/v1/customer/profile
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTguOkthdGUxOTk4QA==
+
+{
+  "name": "New 111"
+}
