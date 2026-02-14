@@ -20,7 +20,7 @@ Authorization: Basic YWRtaW46YWRtaW4=
 }
 
 ### Positive test: Admin can see the list of users
-GET http://localhost:4111//api/v1/admin/users
+GET http://localhost:4111/api/v1/admin/users
 Content-Type: application/json
 Authorization: Basic YWRtaW46YWRtaW4=
 
@@ -194,14 +194,35 @@ Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
   "balance": 5000
 }
 
-### Negative test: Authorized user can maximum deposit 5000 (bug)
+### Positive test boundary: Authorized user can deposit up his account minimum allowed amount (0.01)
 POST http://localhost:4111/api/v1/accounts/deposit
 Content-Type: application/json
 Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
 
 {
   "id": 2,
-  "balance": 5001
+  "balance": 0.01
+}
+
+
+### Positive test boundary: Authorized user can deposit up his account max 5000
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "id": 2,
+  "balance": 4999.99
+}
+
+### Negative test boundary: Authorized user can maximum deposit 5000, check 5000.01 (code200 bug)
+POST http://localhost:4111/api/v1/accounts/deposit
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "id": 2,
+  "balance": 5000.01
 }
 
 ### Negative test: Authorized user can deposit a positive amount
@@ -214,7 +235,7 @@ Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
   "balance": -100
 }
 
-###Negative test: Authorized user cannot make deposit to non-existen account
+### Negative test: Authorized user cannot make deposit to non-existent account
 POST http://localhost:4111/api/v1/accounts/deposit
 Content-Type: application/json
 Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
@@ -224,7 +245,7 @@ Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
   "balance": 100
 }
 
-###Negative test: Authorized user cannot make deposit into someone else's account
+### Negative test: Authorized user cannot make deposit into someone else's account
 POST http://localhost:4111/api/v1/accounts/deposit
 Content-Type: application/json
 Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
@@ -250,7 +271,7 @@ Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
   "amount": 1000
 }
 
-### Negative test: Authorized user can transfer money max 10000(code 200)
+### Negative test boundary: Authorized user cannot transfer amount greater than max limit 10000 (code 200 bug)
 POST http://localhost:4111/api/v1/accounts/transfer
 Content-Type: application/json
 Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
@@ -258,8 +279,31 @@ Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
 {
   "senderAccountId": 2,
   "receiverAccountId": 3,
-  "amount": 10001
+  "amount": 10000.01
 }
+
+### Positive test boundary: Authorized user can transfer money max 10000, check 9999.99
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "senderAccountId": 2,
+  "receiverAccountId": 3,
+  "amount": 9999.99
+}
+
+### Positive test boundary: Authorized user can transfer minimum allowed amount (0.01)
+POST http://localhost:4111/api/v1/accounts/transfer
+Content-Type: application/json
+Authorization: Basic S2F0ZTE5OTcuOkthdGUxOTk3QA==
+
+{
+  "senderAccountId": 2,
+  "receiverAccountId": 3,
+  "amount": 0.01
+}
+
 
 ### Negative test: Authorized user can transfer only positive amount
 POST http://localhost:4111/api/v1/accounts/transfer
