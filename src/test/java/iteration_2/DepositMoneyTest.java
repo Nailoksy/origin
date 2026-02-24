@@ -87,10 +87,20 @@ public class DepositMoneyTest extends StepsBeforeTest {
                 .post("http://localhost:4111/api/v1/accounts/deposit")
                 .then()
                 .assertThat()
-                .statusCode(HttpStatus.SC_OK);
+                .statusCode(HttpStatus.SC_OK)
+                .body("balance", Matchers.equalTo((float)amount));
 
-        //сюда бы проверку что деньги поступили.
-        //Но я 6 часов сидела и так и не смогла это сделать. хелп. из гпт списывать не хочется то, чего не понимаю
+        // проверка, что деньги зачислены
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("balance", Matchers.hasItem((float) amount));
+
 
     }
 
@@ -168,6 +178,17 @@ public class DepositMoneyTest extends StepsBeforeTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
+
+        // проверка, что деньги не зачислены
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("balance", Matchers.hasItem((0.00F)));
     }
     @Test
     public void userCanNotDepositToNonExistentAccountTest() {

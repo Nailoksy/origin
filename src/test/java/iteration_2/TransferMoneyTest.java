@@ -161,6 +161,18 @@ public class TransferMoneyTest extends StepsBeforeTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK);
 
+        // проверка, что деньги поступили
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("balance", Matchers.hasItem((float) amountTransfer));
+
+
     }
 
     @ParameterizedTest
@@ -308,6 +320,17 @@ public class TransferMoneyTest extends StepsBeforeTest {
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.SC_BAD_REQUEST);
+
+        // проверка, что деньги не поступили
+        given()
+                .header("Authorization", userAuthHeader)
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .get("http://localhost:4111/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK)
+                .body("balance", Matchers.hasItem((float) 0.00));
 
     }
 
