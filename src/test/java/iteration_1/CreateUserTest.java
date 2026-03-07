@@ -44,7 +44,6 @@ public class CreateUserTest extends StepsBeforeTest {
                 .body("role", Matchers.equalTo(role));
     }
 
-
     public static Stream<Arguments> userInvalidData() {
         return Stream.of(
                 //username field validation
@@ -67,17 +66,24 @@ public class CreateUserTest extends StepsBeforeTest {
 
                 //password field validation
                 Arguments.of("Kate_1991", "", "USER", "password", List.of(
-                        "Password cannot be blank", "Password must contain at least one digit, one lower case, one upper case, one special character, no spaces, and be at least 8 characters long")),
+                        "Password cannot be blank", "Password must contain " +
+                                "at least one digit, one lower case, one upper case, one special character," +
+                                " no spaces, and be at least 8 characters long")),
                 Arguments.of("Kate_1991", "1234567", "USER", "password", List.of(
-                        "Password must contain at least one digit, one lower case, one upper case, one special character, no spaces, and be at least 8 characters long")),
+                        "Password must contain at least one digit, one lower case, one upper case," +
+                                " one special character, no spaces, and be at least 8 characters long")),
                 Arguments.of("Kate_1991", "KATE1997@", "USER", "password", List.of(
-                        "Password must contain at least one digit, one lower case, one upper case, one special character, no spaces, and be at least 8 characters long")),
+                        "Password must contain at least one digit, one lower case, one upper case," +
+                                " one special character, no spaces, and be at least 8 characters long")),
                 Arguments.of("Kate_1991", "kate1997@", "USER", "password", List.of(
-                        "Password must contain at least one digit, one lower case, one upper case, one special character, no spaces, and be at least 8 characters long")),
+                        "Password must contain at least one digit, one lower case, one upper case," +
+                                " one special character, no spaces, and be at least 8 characters long")),
                 Arguments.of("Kate_1991", "kate19977", "USER", "password", List.of(
-                        "Password must contain at least one digit, one lower case, one upper case, one special character, no spaces, and be at least 8 characters long")),
+                        "Password must contain at least one digit, one lower case, one upper case," +
+                                " one special character, no spaces, and be at least 8 characters long")),
                 Arguments.of("Kate_1991", "kate 19977", "USER", "password", List.of(
-                        "Password must contain at least one digit, one lower case, one upper case, one special character, no spaces, and be at least 8 characters long")),
+                        "Password must contain at least one digit, one lower case, one upper case," +
+                                " one special character, no spaces, and be at least 8 characters long")),
 
                 //role field validation
                 Arguments.of("Kate1994", "Password33$", "EDITOR", "role", List.of("Role must be either 'ADMIN' or 'USER'"))

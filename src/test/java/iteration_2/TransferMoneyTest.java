@@ -13,8 +13,6 @@ public class TransferMoneyTest extends StepsBeforeTest {
     private static final String PASSWORD = "Kate2000#";
     private static final int MAX_DEPOSIT = 5000;
 
-
-
     @ParameterizedTest
     @ValueSource(doubles = {0.01, 9999.99, 10000.00})
     public void userCanTransferMoneyFromOneAccountToAnotherTest(double amountTransfer) {

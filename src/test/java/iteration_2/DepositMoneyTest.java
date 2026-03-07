@@ -100,8 +100,6 @@ public class DepositMoneyTest extends StepsBeforeTest {
                 .assertThat()
                 .statusCode(HttpStatus.SC_OK)
                 .body("balance", Matchers.hasItem((float) amount));
-
-
     }
 
     @ParameterizedTest
