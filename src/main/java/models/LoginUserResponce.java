@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class LoginUserResponce {
+public class LoginUserResponce extends BaseModel{
     private String username;
     private String role;
 }

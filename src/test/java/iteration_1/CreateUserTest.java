@@ -2,10 +2,14 @@ package iteration_1;
 
 import models.CreateUserRequest;
 import models.CreateUserResponce;
+import models.comparison.ModelAssertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import requests.AdminCreateUserRequester;
+import requests.skelethon.requests.CrudRequester;
+import requests.skelethon.requests.Endpoint;
+import requests.skelethon.requests.ValidatedCrudRequester;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -16,8 +20,8 @@ public class CreateUserTest extends BaseTest {
 
     public static Stream<Arguments> userValidData() {
         return Stream.of(
-                Arguments.of("a5._-", "Password33$", "USER"),
-                Arguments.of("Kate11", "Kate2000#", "USER")
+                Arguments.of("a8._-", "Password33$", "USER"),
+                Arguments.of("Kate333", "Kate2000#", "USER")
         );
     }
 
@@ -31,15 +35,19 @@ public class CreateUserTest extends BaseTest {
                 .role(role)
                 .build();
 
-        CreateUserResponce createUserResponce = new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
-                .post(createUserRequest)
-                .extract().as(CreateUserResponce.class);
+//т.к позитивный(экстрактим createUserRequest), то берем ValidatedCrudRequester
+        CreateUserResponce createUserResponce = new ValidatedCrudRequester<CreateUserResponce>
+                (RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.entityWasCreated())
+                .post(createUserRequest);
 
-        softly.assertThat(createUserRequest.getUsername()).isEqualTo(createUserResponce.getUsername());
-        softly.assertThat(createUserRequest.getPassword()).isNotEqualTo(createUserResponce.getPassword());
-        softly.assertThat(createUserRequest.getRole()).isEqualTo(createUserResponce.getRole());
+        ModelAssertions.assertThatModels(createUserRequest, createUserResponce).match();
+
+//        softly.assertThat(createUserRequest.getUsername()).isEqualTo(createUserResponce.getUsername());
+//        softly.assertThat(createUserRequest.getPassword()).isNotEqualTo(createUserResponce.getPassword());
+//        softly.assertThat(createUserRequest.getRole()).isEqualTo(createUserResponce.getRole());
     }
-
 
     public static Stream<Arguments> userInvalidData() {
         return Stream.of(
@@ -90,7 +98,10 @@ public class CreateUserTest extends BaseTest {
                 .role(role)
                 .build();
 
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.requestReturnsBadRequest(errorKey, errorValue))
+        //негативный, поэтому берем CrudeRequester
+        new CrudRequester(RequestSpecs.adminSpec(),
+                Endpoint.ADMIN_USER,
+                ResponseSpecs.requestReturnsBadRequest(errorKey, errorValue))
                 .post(createUserRequest);
     }
 }
