@@ -17,6 +17,7 @@ import requests.AdminCreateUserRequester;
 import requests.CreateAccountRequester;
 import requests.GetAccountsRequester;
 import requests.DepositRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -31,16 +32,7 @@ public class DepositMoneyTest extends BaseTest {
     @ValueSource(doubles = {0.01, 4999.99, 5000.00})
     public void userCanDepositHisAccountTest(double amount) {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
         //создаем аккаунт(счет) и получаем ID
         CreateAccountResponse createdAccount = new CreateAccountRequester(
