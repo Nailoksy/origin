@@ -14,6 +14,7 @@ public class ResponseSpecs {
         return new ResponseSpecBuilder();
     }
 
+    public static final String AUTHORIZATION_HEADER = "Authorization";
     //201
     public static ResponseSpecification entityWasCreated() {
         return defaultResponseBuilder()
