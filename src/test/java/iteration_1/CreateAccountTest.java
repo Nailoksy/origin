@@ -1,6 +1,7 @@
 package iteration_1;
 
 import generators.RandomData;
+import models.CreateAccountResponse;
 import models.CreateUserRequest;
 import models.UserRole;
 import org.hamcrest.Matchers;
@@ -28,15 +29,27 @@ public class CreateAccountTest extends BaseTest{
                 .post(userRequest);
 
         //создаем аккаунт(счет)
-        new CreateAccountRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-        ResponseSpecs.entityWasCreated())
-                .post(null);
+        CreateAccountResponse createdAccount = new CreateAccountRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.entityWasCreated())
+                .post(null)
+                .extract()
+                .as(CreateAccountResponse.class);
+
+        long accountId = createdAccount.getId();
 
         //проверка, что счет создан
-        new GetAccountsRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        CreateAccountResponse[] accounts = new GetAccountsRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
                 .get(null)
-                .body("size()", Matchers.greaterThan(0));
+                .extract()
+                .as(CreateAccountResponse[].class);
+
+        //затем проверяем, что аккаунт совпадает с созданным
+        softly.assertThat(accounts).isNotEmpty();
+        softly.assertThat(accounts)
+                .anyMatch(account -> account.getId() == accountId);
     }
 
 }
