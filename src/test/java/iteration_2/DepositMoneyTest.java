@@ -23,8 +23,6 @@ import specs.ResponseSpecs;
 
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
-
 
 public class DepositMoneyTest extends BaseTest {
 
