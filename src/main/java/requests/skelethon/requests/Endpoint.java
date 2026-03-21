@@ -3,6 +3,7 @@ package requests.skelethon.requests;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import models.*;
+import models.DeleteUserRequest;
 
 @Getter
 @AllArgsConstructor
@@ -10,33 +11,38 @@ public enum Endpoint {
     ADMIN_USER(
             "admin/users",
             CreateUserRequest.class,
-            CreateUserResponce.class),
+            CreateUserResponse.class),
     LOGIN_USER(
             "auth/login",
             LoginUserRequest.class,
-            LoginUserResponce.class),
+            LoginUserResponse.class),
     CREATE_ACCOUNTS(
             "/accounts",
             BaseModel.class,
-            CreateAccountResponce.class),
+            CreateAccountResponse.class),
     GET_ACCOUNTS(
             "customer/accounts",
             BaseModel.class,
-            GetAccountsResponce.class),
+            GetAccountsResponse.class),
     DEPOSIT(
             "accounts/deposit",
             DepositRequest.class,
-            DepositResponce.class
+            DepositResponse.class
     ),
     TRANSFER(
             "accounts/transfer",
             TransferRequest.class,
-            TransferResponce.class
+            TransferResponse.class
     ),
     UPDATE(
             "customer/profile",
             UpdateNameRequest.class,
-            UpdateNameResponce.class
+            UpdateNameResponse.class
+    ),
+    DELETE(
+            "admin/users/{id}",
+            DeleteUserRequest.class,
+            BaseModel.class
     );
 
     private final String url;

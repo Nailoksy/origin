@@ -2,7 +2,7 @@ package requests.steps;
 
 import generators.RandomModelGenerator;
 import models.CreateUserRequest;
-import models.CreateUserResponce;
+import models.CreateUserResponse;
 import requests.skelethon.requests.Endpoint;
 import requests.skelethon.requests.ValidatedCrudRequester;
 import specs.RequestSpecs;
@@ -12,7 +12,7 @@ public class AdminSteps {
     public static CreateUserRequest createUser(){
         CreateUserRequest userRequest = RandomModelGenerator.generate(CreateUserRequest.class);
 
-        new ValidatedCrudRequester<CreateUserResponce>(
+        new ValidatedCrudRequester<CreateUserResponse>(
                 RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())

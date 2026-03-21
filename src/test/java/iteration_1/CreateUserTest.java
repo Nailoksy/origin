@@ -1,13 +1,12 @@
 package iteration_1;
 
 import models.CreateUserRequest;
-import models.CreateUserResponce;
+import models.CreateUserResponse;
 import models.comparison.ModelAssertions;
 import models.CreateUserResponse;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.AdminCreateUserRequester;
 import requests.skelethon.requests.CrudRequester;
 import requests.skelethon.requests.Endpoint;
 import requests.skelethon.requests.ValidatedCrudRequester;
@@ -37,17 +36,13 @@ public class CreateUserTest extends BaseTest {
                 .build();
 
 //т.к позитивный(экстрактим createUserRequest), то берем ValidatedCrudRequester
-        CreateUserResponce createUserResponce = new ValidatedCrudRequester<CreateUserResponce>
+        CreateUserResponse createUserResponce = new ValidatedCrudRequester<CreateUserResponse>
                 (RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())
                 .post(createUserRequest);
 
         ModelAssertions.assertThatModels(createUserRequest, createUserResponce).match();
-
-//        softly.assertThat(createUserRequest.getUsername()).isEqualTo(createUserResponce.getUsername());
-//        softly.assertThat(createUserRequest.getPassword()).isNotEqualTo(createUserResponce.getPassword());
-//        softly.assertThat(createUserRequest.getRole()).isEqualTo(createUserResponce.getRole());
     }
 
     public static Stream<Arguments> userInvalidData() {

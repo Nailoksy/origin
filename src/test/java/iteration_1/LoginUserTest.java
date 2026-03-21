@@ -1,15 +1,10 @@
 package iteration_1;
 
-import generators.RandomData;
-import generators.RandomModelGenerator;
 import models.CreateUserRequest;
-import models.CreateUserResponce;
+import models.CreateUserResponse;
 import models.LoginUserRequest;
-import models.UserRole;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.LoginUserRequester;
 import requests.skelethon.requests.CrudRequester;
 import requests.skelethon.requests.Endpoint;
 import requests.skelethon.requests.ValidatedCrudRequester;
@@ -26,7 +21,7 @@ public class LoginUserTest extends BaseTest {
                 .password("admin")
                 .build();
 
-        new ValidatedCrudRequester<CreateUserResponce>(RequestSpecs.unauthSpec(),
+        new ValidatedCrudRequester<CreateUserResponse>(RequestSpecs.unauthSpec(),
                 Endpoint.LOGIN_USER,
                 ResponseSpecs.requestReturnsOK())
                 .post(userRequest);

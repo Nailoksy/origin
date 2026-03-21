@@ -15,17 +15,20 @@ public class ResponseSpecs {
     }
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    //201
-    public static ResponseSpecification entityWasCreated() {
-        return defaultResponseBuilder()
-                .expectStatusCode(HttpStatus.SC_CREATED)
-                .build();
-    }
+    public static final long NON_EXISTENT_ACCOUNT_ID = 10L;
+    public static final double INVALID_DEPOSIT_AMOUNT = 100.00;
 
     //200
     public static ResponseSpecification requestReturnsOK() {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_OK)
+                .build();
+    }
+
+    //201
+    public static ResponseSpecification entityWasCreated() {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_CREATED)
                 .build();
     }
 

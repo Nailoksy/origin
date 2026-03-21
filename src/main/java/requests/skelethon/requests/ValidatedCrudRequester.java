@@ -1,5 +1,6 @@
 package requests.skelethon.requests;
 
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
@@ -21,8 +22,9 @@ public class ValidatedCrudRequester <T extends BaseModel> extends HttpRequest im
     }
 
     @Override
-    public Object get(long id) {
-        return null;
+    public T get(long id) {
+        return (T) crudRequester.get(id).extract()
+                .as(endpoint.getResponseModel());
     }
 
     @Override
@@ -31,7 +33,7 @@ public class ValidatedCrudRequester <T extends BaseModel> extends HttpRequest im
     }
 
     @Override
-    public Object delete(long id) {
-        return null;
+    public ValidatableResponse delete(long id) {
+        return crudRequester.delete(id);
     }
 }

@@ -1,10 +1,9 @@
 package iteration_1;
 
-import generators.RandomData;
-import models.CreateUserRequest;
-import models.UserRole;
-import org.hamcrest.Matchers;
+import models.*;
 import org.junit.jupiter.api.Test;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import requests.AdminCreateUserRequester;
 import requests.CreateAccountRequester;
 import requests.GetAccountsRequester;
@@ -15,39 +14,19 @@ public class CreateAccountTest extends BaseTest{
     @Test
     public void userCanCreateAccountTest() {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
         //создаем аккаунт(счет)
-        CreateAccountResponse createdAccount = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
+        CreateAccountResponse createdAccount = UserSteps.createAccount(userRequest);
 
-        long accountId = createdAccount.getId();
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts = UserSteps.getAccounts(userRequest);
 
-        //проверка, что счет создан
-        CreateAccountResponse[] accounts = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
-
-        //затем проверяем, что аккаунт совпадает с созданным
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
         softly.assertThat(accounts).isNotEmpty();
         softly.assertThat(accounts)
-                .anyMatch(account -> account.getId() == accountId);
+                .anyMatch(account ->
+                        account.getAccountNumber().equals(createdAccount.getAccountNumber()));
     }
 
 }
