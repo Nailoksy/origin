@@ -1,13 +1,11 @@
 package iteration_2;
 
 import generators.RandomData;
-import io.restassured.http.ContentType;
 import iteration_1.BaseTest;
 import models.CreateUserRequest;
 import models.UpdateNameRequest;
+import models.UpdateNameResponse;
 import models.UserRole;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -43,14 +41,19 @@ public class UpdateNameTest extends BaseTest {
                 .name(name)
                 .build();
 
-        new UpdateNameRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        UpdateNameResponse updateNameResponse = new UpdateNameRequester(RequestSpecs.authAsUser(userRequest.getUsername(),
+                userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
                 .put(nameRequest)
-                .body("customer.name", Matchers.equalTo(name));;
+                .extract()
+                .as(UpdateNameResponse.class);
+
+        softly.assertThat(updateNameResponse.getCustomer().getName()).as(
+                "Check that user name was updated").isEqualTo(name);
 
 
     }
-    private static Stream<Arguments> invalidDepositData() {
+    private static Stream<Arguments> invalidNameData() {
         return Stream.of(
                 Arguments.of("NewName", "Name must contain two words with letters only"),
                 Arguments.of("Name", "Name must contain two words with letters only"),
@@ -60,7 +63,7 @@ public class UpdateNameTest extends BaseTest {
     }
 
     @ParameterizedTest
-    @MethodSource("invalidDepositData")
+    @MethodSource("invalidNameData")
     public void userCanNotUpdateNameWithInvalidData(String name, String errorMessage) {
         //создание пользователя
         CreateUserRequest userRequest = CreateUserRequest.builder()
@@ -79,10 +82,13 @@ public class UpdateNameTest extends BaseTest {
                 .name(name)
                 .build();
 
-        new UpdateNameRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        String updateNameResponse = new UpdateNameRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsBadStringRequest(errorMessage))
                 .put(nameRequest)
-                .body(Matchers.equalTo(errorMessage));;
+                .extract()
+                .asString();
+
+        softly.assertThat(updateNameResponse).as("Check error message for invalid name").isEqualTo(errorMessage);
     }
 
 

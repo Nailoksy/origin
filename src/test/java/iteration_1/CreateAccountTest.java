@@ -30,7 +30,7 @@ public class CreateAccountTest extends BaseTest{
         CreateAccountResponse createdAccount = new CreateAccountRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
@@ -40,7 +40,7 @@ public class CreateAccountTest extends BaseTest{
         CreateAccountResponse[] accounts = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 

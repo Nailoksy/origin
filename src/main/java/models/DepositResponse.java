@@ -4,11 +4,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UpdateNameResponce extends BaseModel {
-    private String name;
-    private String message;
+public class DepositResponse {
+    private long id;
+    private String accountNumber;
+    private float balance;
+    private List<Object> transactions;
 }

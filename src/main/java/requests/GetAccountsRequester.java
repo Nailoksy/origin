@@ -20,6 +20,13 @@ public class GetAccountsRequester extends Request implements Get {
                 .then()
                 .assertThat()
                 .spec(responseSpecification);
-
+    }
+    public ValidatableResponse get() {
+        return given()
+                .spec(requestSpecification)
+                .get("/api/v1/customer/accounts")
+                .then()
+                .assertThat()
+                .spec(responseSpecification);
     }
 }

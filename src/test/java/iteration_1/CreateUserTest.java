@@ -1,7 +1,7 @@
 package iteration_1;
 
 import models.CreateUserRequest;
-import models.CreateUserResponce;
+import models.CreateUserResponse;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -31,13 +31,13 @@ public class CreateUserTest extends BaseTest {
                 .role(role)
                 .build();
 
-        CreateUserResponce createUserResponce = new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+        CreateUserResponse createUserResponse = new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
                 .post(createUserRequest)
-                .extract().as(CreateUserResponce.class);
+                .extract().as(CreateUserResponse.class);
 
-        softly.assertThat(createUserRequest.getUsername()).isEqualTo(createUserResponce.getUsername());
-        softly.assertThat(createUserRequest.getPassword()).isNotEqualTo(createUserResponce.getPassword());
-        softly.assertThat(createUserRequest.getRole()).isEqualTo(createUserResponce.getRole());
+        softly.assertThat(createUserRequest.getUsername()).isEqualTo(createUserResponse.getUsername());
+        softly.assertThat(createUserRequest.getPassword()).isNotEqualTo(createUserResponse.getPassword());
+        softly.assertThat(createUserRequest.getRole()).isEqualTo(createUserResponse.getRole());
     }
 
     public static Stream<Arguments> userInvalidData() {

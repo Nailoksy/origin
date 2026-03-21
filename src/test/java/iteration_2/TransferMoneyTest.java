@@ -18,6 +18,28 @@ import specs.ResponseSpecs;
 import java.util.stream.Stream;
 
 public class TransferMoneyTest extends BaseTest {
+    private static final double TOTAL_TRANSFER = 15000;
+    private static final double MAX_DEPOSIT = 5000;
+    private int iterations = (int) (TOTAL_TRANSFER / MAX_DEPOSIT);
+
+    // метод для депозита денег на cчет
+    private void depositMoney(long accountId, double amountDeposit, CreateUserRequest userRequest){
+        DepositRequest depositRequest = DepositRequest.builder()
+                .id(accountId)
+                .balance(amountDeposit)
+                .build();
+
+        new DepositRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                ResponseSpecs.requestReturnsOK())
+                .post(depositRequest);
+    }
+
+    private void repeat(int times, Runnable action) {
+        for (int i = 0; i < times; i++) {
+            action.run();
+        }
+    }
 
     @ParameterizedTest
     @ValueSource(doubles = {0.01, 9999.99, 10000.00})
@@ -38,7 +60,7 @@ public class TransferMoneyTest extends BaseTest {
         CreateAccountResponse account1 = new CreateAccountRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
@@ -48,7 +70,7 @@ public class TransferMoneyTest extends BaseTest {
         CreateAccountResponse[] accountsUser1 = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
@@ -56,33 +78,19 @@ public class TransferMoneyTest extends BaseTest {
         softly.assertThat(accountsUser1)
                 .anyMatch(acc -> acc.getId() == accountId1);
 
-        // депозит денег на первый счет частями
-        double totalDeposit = 15000; // всего хотим положить
-        double maxDeposit = 5000;    // максимум за один депозит
-        int iterations = (int) (totalDeposit / maxDeposit);
-        for (int i = 0; i < iterations; i++) {
-            double amountToDeposit = Math.min(maxDeposit, totalDeposit - i * maxDeposit);
-            DepositRequest depositRequest = DepositRequest.builder()
-                    .id(accountId1)
-                    .balance(amountToDeposit)
-                    .build();
-
-            new DepositRequester(
-                    RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                    ResponseSpecs.requestReturnsOK())
-                    .post(depositRequest);
-        }
+        // депозит денег на первый счет 3 раза
+        repeat(3, () -> depositMoney(accountId1, MAX_DEPOSIT, userRequest));
 
         // проверка баланса после депозита
         accountsUser1 = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
         softly.assertThat(accountsUser1)
-                .anyMatch(acc -> acc.getId() == accountId1 && acc.getBalance() == totalDeposit);
+                .anyMatch(acc -> acc.getId() == accountId1 && acc.getBalance() == TOTAL_TRANSFER);
 
         //создание пользователя2
         CreateUserRequest userRequest2 = CreateUserRequest.builder()
@@ -100,7 +108,7 @@ public class TransferMoneyTest extends BaseTest {
         CreateAccountResponse account2 = new CreateAccountRequester(
                 RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
@@ -110,7 +118,7 @@ public class TransferMoneyTest extends BaseTest {
         CreateAccountResponse[] accountsUser2 = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
@@ -134,7 +142,7 @@ public class TransferMoneyTest extends BaseTest {
         accountsUser2 = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
@@ -169,39 +177,25 @@ public class TransferMoneyTest extends BaseTest {
         CreateAccountResponse account1 = new CreateAccountRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
         long accountId1 = account1.getId();
 
         // депозит на первый счет частями
-        double totalDeposit = 15000;
-        double maxDeposit = 5000;
-        int iterations = (int) (totalDeposit / maxDeposit);
-        for (int i = 0; i < iterations; i++) {
-            double amountToDeposit = Math.min(maxDeposit, totalDeposit - i * maxDeposit);
-            DepositRequest depositRequest = DepositRequest.builder()
-                    .id(accountId1)
-                    .balance(amountToDeposit)
-                    .build();
-
-            new DepositRequester(
-                    RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                    ResponseSpecs.requestReturnsOK())
-                    .post(depositRequest);
-        }
+        repeat(3, () -> depositMoney(accountId1, MAX_DEPOSIT, userRequest));
 
         // проверка баланса после депозита
         CreateAccountResponse[] accountsUser1 = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
         softly.assertThat(accountsUser1)
-                .anyMatch(acc -> acc.getId() == accountId1 && acc.getBalance() == totalDeposit);
+                .anyMatch(acc -> acc.getId() == accountId1 && acc.getBalance() == TOTAL_TRANSFER);
 
         //создание пользователя2
         CreateUserRequest userRequest2 = CreateUserRequest.builder()
@@ -219,7 +213,7 @@ public class TransferMoneyTest extends BaseTest {
         CreateAccountResponse account2 = new CreateAccountRequester(
                 RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
@@ -241,7 +235,7 @@ public class TransferMoneyTest extends BaseTest {
         CreateAccountResponse[] accountsUser2 = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 

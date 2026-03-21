@@ -46,7 +46,7 @@ public class DepositMoneyTest extends BaseTest {
         CreateAccountResponse createdAccount = new CreateAccountRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
@@ -56,7 +56,7 @@ public class DepositMoneyTest extends BaseTest {
         CreateAccountResponse[] accounts = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
@@ -110,7 +110,7 @@ public class DepositMoneyTest extends BaseTest {
         //создаем аккаунт(счет) и получаем ID
         CreateAccountResponse createAccount = new CreateAccountRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
@@ -120,7 +120,7 @@ public class DepositMoneyTest extends BaseTest {
         CreateAccountResponse[] accounts = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
@@ -144,7 +144,7 @@ public class DepositMoneyTest extends BaseTest {
         CreateAccountResponse[] updatedAccounts = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
@@ -169,7 +169,7 @@ public class DepositMoneyTest extends BaseTest {
         //создаем аккаунт(счет) и получаем ID
         CreateAccountResponse createAccount = new CreateAccountRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.entityWasCreated())
-                .post(null)
+                .post()
                 .extract()
                 .as(CreateAccountResponse.class);
 
@@ -179,7 +179,7 @@ public class DepositMoneyTest extends BaseTest {
         CreateAccountResponse[] accounts = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
@@ -190,8 +190,8 @@ public class DepositMoneyTest extends BaseTest {
 
         //депозит денег на созданный ранее счет с невалидными данными
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(10)
-                .balance(100)
+                .id(RandomData.getRandomId())
+                .balance(RandomData.getRandomAmount())
                 .build();
 
         new DepositRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
@@ -203,7 +203,7 @@ public class DepositMoneyTest extends BaseTest {
         CreateAccountResponse[] updatedAccounts = new GetAccountsRequester(
                 RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
                 ResponseSpecs.requestReturnsOK())
-                .get(null)
+                .get()
                 .extract()
                 .as(CreateAccountResponse[].class);
 
