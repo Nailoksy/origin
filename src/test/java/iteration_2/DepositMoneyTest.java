@@ -45,7 +45,7 @@ public class DepositMoneyTest extends BaseTest {
         softly.assertThat(accounts).isNotEmpty();
         softly.assertThat(accounts)
                 .anyMatch(account ->
-                        account.getAccountNumber() == createdAccount.getAccountNumber());
+                        account.getAccountNumber().equals(createdAccount.getAccountNumber()));
 
         //депозит денег на созданный ранее счет
         DepositRequest depositRequest = DepositRequest.builder()
@@ -62,7 +62,7 @@ public class DepositMoneyTest extends BaseTest {
 
         //проверка, что деньги зачислены (получили класс ответа и сравниваем баланс с суммой депозита)
         softly.assertThat(depositResponse.getBalance())
-                .isEqualTo((float) amount);
+                .isEqualTo(amount);
     }
 
 
@@ -94,7 +94,7 @@ public class DepositMoneyTest extends BaseTest {
 
         //депозит денег на созданный ранее счет с невалидными данными
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accountId)
+                .id(createdAccount.getId())
                 .balance(amount)
                 .build();
 
