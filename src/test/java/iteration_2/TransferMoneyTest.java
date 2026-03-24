@@ -1,39 +1,26 @@
 package iteration_2;
 
-import generators.RandomData;
 import iteration_1.BaseTest;
-import models.CreateAccountResponse;
-import models.CreateUserRequest;
-import models.DepositRequest;
-import models.TransferRequest;
-import models.UserRole;
+import models.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.*;
+import requests.skelethon.requests.CrudRequester;
+import requests.skelethon.requests.Endpoint;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
+import static requests.steps.UserSteps.depositMoney;
 
 public class TransferMoneyTest extends BaseTest {
-    private static final double TOTAL_TRANSFER = 15000;
     private static final double MAX_DEPOSIT = 5000;
-    private int iterations = (int) (TOTAL_TRANSFER / MAX_DEPOSIT);
+    private static final double TOTAL_TRANSFER = 15000;
 
-    // метод для депозита денег на cчет
-    private void depositMoney(long accountId, double amountDeposit, CreateUserRequest userRequest){
-        DepositRequest depositRequest = DepositRequest.builder()
-                .id(accountId)
-                .balance(amountDeposit)
-                .build();
-
-        new DepositRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .post(depositRequest);
-    }
 
     private void repeat(int times, Runnable action) {
         for (int i = 0; i < times; i++) {
@@ -44,110 +31,52 @@ public class TransferMoneyTest extends BaseTest {
     @ParameterizedTest
     @ValueSource(doubles = {0.01, 9999.99, 10000.00})
     public void userCanTransferMoneyFromOneAccountToAnotherTest(double amountTransfer) {
-        //создание пользователя1
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        //создание пользователя
+        CreateUserRequest createUser1 = AdminSteps.createUser();
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        //создаем аккаунт(счет)
+        CreateAccountResponse createdAccount1 = UserSteps.createAccount(createUser1);
 
-        //создаем аккаунт(счет) и получаем ID1
-        CreateAccountResponse account1 = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts1 = UserSteps.getAccounts(createUser1);
 
-        long accountId1 = account1.getId();
-
-        // проверка, что счет создан
-        CreateAccountResponse[] accountsUser1 = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
-
-        softly.assertThat(accountsUser1).isNotEmpty();
-        softly.assertThat(accountsUser1)
-                .anyMatch(acc -> acc.getId() == accountId1);
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
+        softly.assertThat(accounts1).isNotEmpty();
+        softly.assertThat(accounts1)
+                .anyMatch(account ->
+                        account.getAccountNumber().equals(createdAccount1.getAccountNumber()));
 
         // депозит денег на первый счет 3 раза
-        repeat(3, () -> depositMoney(accountId1, MAX_DEPOSIT, userRequest));
+        repeat(3, () -> depositMoney(createdAccount1.getId(), MAX_DEPOSIT, createUser1));
 
-        // проверка баланса после депозита
-        accountsUser1 = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
+        //проверка, что деньги зачислены (получаем аккаунты, затем фильтруем аккаунты по айди
+        //и у отфильтрованного сравниваем баланс с размером депозита)
+        GetAccountsResponse[] updateAccounts = UserSteps.getAccounts(createUser1);
+        GetAccountsResponse account = Arrays.stream(updateAccounts).filter(acc -> acc.getId() == createdAccount1.getId()).findFirst().orElseThrow();
+        softly.assertThat(account.getBalance()).isEqualTo((float) TOTAL_TRANSFER);
 
-        softly.assertThat(accountsUser1)
-                .anyMatch(acc -> acc.getId() == accountId1 && acc.getBalance() == TOTAL_TRANSFER);
+        //создание пользователя 2
+        CreateUserRequest createUser2 = AdminSteps.createUser();
 
-        //создание пользователя2
-        CreateUserRequest userRequest2 = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        //создаем аккаунт(счет)
+        CreateAccountResponse createdAccount2 = UserSteps.createAccount(createUser2);
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest2);
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts2 = UserSteps.getAccounts(createUser2);
 
-        //создаем аккаунт(счет) и получаем ID2
-        CreateAccountResponse account2 = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
-
-        long accountId2 = account2.getId();
-
-        // проверка, что счет создан
-        CreateAccountResponse[] accountsUser2 = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
-
-        softly.assertThat(accountsUser2).isNotEmpty();
-        softly.assertThat(accountsUser2)
-                .anyMatch(acc -> acc.getId() == accountId2);
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
+        softly.assertThat(accounts2).isNotEmpty();
+        softly.assertThat(accounts2)
+                .anyMatch(acc ->
+                        acc.getAccountNumber().equals(createdAccount2.getAccountNumber()));
 
         // перевод с одного аккаунта на второй
-        TransferRequest transferRequest = TransferRequest.builder()
-                .senderAccountId(accountId1)
-                .receiverAccountId(accountId2)
-                .amount(amountTransfer)
-                .build();
-
-        new TransferRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .post(transferRequest);
+        UserSteps.transferMoney(createdAccount1.getId(), createdAccount2.getId(), amountTransfer, createUser1);
 
         // проверка баланса получателя
-        accountsUser2 = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
-
-        softly.assertThat(accountsUser2)
-                .anyMatch(acc -> acc.getId() == accountId2 && acc.getBalance() == amountTransfer);
+        GetAccountsResponse[] updatedAccounts2 = UserSteps.getAccounts(createUser2);
+        GetAccountsResponse account2 = Arrays.stream(updatedAccounts2).filter(acc -> acc.getId() == createdAccount2.getId()).findFirst().orElseThrow();
+        softly.assertThat(account2.getBalance()).isEqualTo((float) amountTransfer);
     }
 
     private static Stream<Arguments> invalidDepositData() {
@@ -161,85 +90,62 @@ public class TransferMoneyTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("invalidDepositData")
     public void userCanNotTransferMoneyWithInvalidDataTest(double amountTransfer, String errorMessage) {
-        //создание пользователя1
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        //создание пользователя
+        CreateUserRequest createUser1 = AdminSteps.createUser();
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        //создаем аккаунт(счет)
+        CreateAccountResponse createdAccount1 = UserSteps.createAccount(createUser1);
 
-        //создаем аккаунт и получаем ID1
-        CreateAccountResponse account1 = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts1 = UserSteps.getAccounts(createUser1);
 
-        long accountId1 = account1.getId();
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
+        softly.assertThat(accounts1).isNotEmpty();
+        softly.assertThat(accounts1)
+                .anyMatch(account ->
+                        account.getAccountNumber().equals(createdAccount1.getAccountNumber()));
 
-        // депозит на первый счет частями
-        repeat(3, () -> depositMoney(accountId1, MAX_DEPOSIT, userRequest));
+        // депозит денег на первый счет 3 раза
+        repeat(3, () -> depositMoney(createdAccount1.getId(), MAX_DEPOSIT, createUser1));
 
-        // проверка баланса после депозита
-        CreateAccountResponse[] accountsUser1 = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
+        //проверка, что деньги зачислены (получаем аккаунты, затем фильтруем аккаунты по айди
+        //и у отфильтрованного сравниваем баланс с размером депозита)
+        GetAccountsResponse[] updateAccounts = UserSteps.getAccounts(createUser1);
+        GetAccountsResponse account = Arrays.stream(updateAccounts).filter(acc -> acc.getId() == createdAccount1.getId()).findFirst().orElseThrow();
+        softly.assertThat(account.getBalance()).isEqualTo((float) TOTAL_TRANSFER);
 
-        softly.assertThat(accountsUser1)
-                .anyMatch(acc -> acc.getId() == accountId1 && acc.getBalance() == TOTAL_TRANSFER);
+        //создание пользователя 2
+        CreateUserRequest createUser2 = AdminSteps.createUser();
 
-        //создание пользователя2
-        CreateUserRequest userRequest2 = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        //создаем аккаунт(счет)
+        CreateAccountResponse createdAccount2 = UserSteps.createAccount(createUser2);
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest2);
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts2 = UserSteps.getAccounts(createUser2);
 
-        //создаем аккаунт и получаем ID2
-        CreateAccountResponse account2 = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
+        softly.assertThat(accounts2).isNotEmpty();
+        softly.assertThat(accounts2)
+                .anyMatch(acc ->
+                        acc.getAccountNumber().equals(createdAccount2.getAccountNumber()));
 
-        long accountId2 = account2.getId();
-
-        //перевод с одного аккаунта на второй с невалидной суммой
+        //перевод с невалидными данными
         TransferRequest transferRequest = TransferRequest.builder()
-                .senderAccountId(accountId1)
-                .receiverAccountId(accountId2)
+                .senderAccountId(createdAccount1.getId())
+                .receiverAccountId(createdAccount2.getId())
                 .amount(amountTransfer)
                 .build();
 
-        new TransferRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        new CrudRequester(RequestSpecs.authAsUser(createUser1.getUsername(), createUser1.getPassword()),
+                Endpoint.TRANSFER,
                 ResponseSpecs.requestReturnsBadStringRequest(errorMessage))
                 .post(transferRequest);
 
-        // проверка, что деньги не поступили
-        CreateAccountResponse[] accountsUser2 = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest2.getUsername(), userRequest2.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
+        //Проверка, что деньги не поступили к получателю
+        GetAccountsResponse[] updateAccounts2 = UserSteps.getAccounts(createUser2);
 
-        softly.assertThat(accountsUser2)
-                .anyMatch(acc -> acc.getId() == accountId2 && acc.getBalance() == 0.0F);
+        GetAccountsResponse receiverAccount = Arrays.stream(updateAccounts2).filter(acc -> acc.getId() == createdAccount2.getId()).findFirst().orElseThrow();
+        softly.assertThat(receiverAccount.getBalance() == 0.0F);
+
     }
 }

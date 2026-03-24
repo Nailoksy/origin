@@ -4,11 +4,6 @@ import models.*;
 import org.junit.jupiter.api.Test;
 import requests.steps.AdminSteps;
 import requests.steps.UserSteps;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.GetAccountsRequester;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
 
 public class CreateAccountTest extends BaseTest{
     @Test

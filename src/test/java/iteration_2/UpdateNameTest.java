@@ -1,61 +1,35 @@
 package iteration_2;
 
-import generators.RandomData;
-import io.restassured.http.ContentType;
 import iteration_1.BaseTest;
-import models.CreateUserRequest;
-import models.UpdateNameRequest;
-import models.UpdateNameResponse;
-import models.UserRole;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matchers;
+import models.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.AdminCreateUserRequester;
-import requests.UpdateNameRequester;
+import requests.skelethon.requests.CrudRequester;
+import requests.skelethon.requests.Endpoint;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
-
 public class UpdateNameTest extends BaseTest {
-
-
     @ParameterizedTest
     @ValueSource(strings = {"New Name", "new name"})
     public void userCanUpdateNameWithCorrectData(String name) {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequest createUser = AdminSteps.createUser();
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        //обновление имени
+        UpdateNameResponse updateNameResponse = UserSteps.updateName(name, createUser);
 
-        UpdateNameRequest nameRequest = UpdateNameRequest.builder()
-                .name(name)
-                .build();
-
-        UpdateNameResponse updateNameResponse = new UpdateNameRequester(RequestSpecs.authAsUser(userRequest.getUsername(),
-                userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .put(nameRequest)
-                .extract()
-                .as(UpdateNameResponse.class);
-
+        //проверка, что имя обновлено
         softly.assertThat(updateNameResponse.getCustomer().getName()).as(
                 "Check that user name was updated").isEqualTo(name);
-
-
     }
+
     private static Stream<Arguments> invalidNameData() {
         return Stream.of(
                 Arguments.of("NewName", "Name must contain two words with letters only"),
@@ -69,25 +43,18 @@ public class UpdateNameTest extends BaseTest {
     @MethodSource("invalidNameData")
     public void userCanNotUpdateNameWithInvalidData(String name, String errorMessage) {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        CreateUserRequest createUser = AdminSteps.createUser();
 
         //изменение имени
         UpdateNameRequest nameRequest = UpdateNameRequest.builder()
                 .name(name)
                 .build();
 
-        String updateNameResponse = new UpdateNameRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        String updateNameResponse = new CrudRequester(RequestSpecs.authAsUser(
+                createUser.getUsername(), createUser.getPassword()),
+                Endpoint.UPDATE,
                 ResponseSpecs.requestReturnsBadStringRequest(errorMessage))
-                .put(nameRequest)
+                .update(nameRequest)
                 .extract()
                 .asString();
 

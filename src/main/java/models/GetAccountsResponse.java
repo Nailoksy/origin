@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GetAccountsResponse extends BaseModel{
+public class GetAccountsResponse extends BaseModel {
     private long id;
     private String accountNumber;
     private float balance;

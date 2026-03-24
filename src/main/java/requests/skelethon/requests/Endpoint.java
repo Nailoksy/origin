@@ -40,9 +40,15 @@ public enum Endpoint {
             UpdateNameResponse.class
     ),
     DELETE(
-            "admin/users/{id}",
+            //в эндпоинте еще добавлен {id}, но его вписала в CrudRequester
+            "admin/users/",
             DeleteUserRequest.class,
             BaseModel.class
+    ),
+    ADMIN_GET_ALL_USERS(
+            "admin/users",
+            BaseModel.class,
+            GetAllUsersResponse.class
     );
 
     private final String url;

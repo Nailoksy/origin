@@ -4,30 +4,22 @@ package iteration_2;
 import generators.RandomData;
 import iteration_1.BaseTest;
 import models.*;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.GetAccountsRequester;
-import requests.DepositRequester;
 import requests.skelethon.requests.CrudRequester;
 import requests.skelethon.requests.Endpoint;
-import requests.skelethon.requests.ValidatedCrudRequester;
 import requests.steps.AdminSteps;
 import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
-
-
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 
 public class DepositMoneyTest extends BaseTest {
-
 
     @ParameterizedTest
     @ValueSource(doubles = {0.01, 4999.99, 5000.00})
@@ -48,23 +40,15 @@ public class DepositMoneyTest extends BaseTest {
                         account.getAccountNumber().equals(createdAccount.getAccountNumber()));
 
         //депозит денег на созданный ранее счет
-        DepositRequest depositRequest = DepositRequest.builder()
-                .id(createdAccount.getId())
-                .balance(amount)
-                .build();
+        UserSteps.depositMoney(createdAccount.getId(), amount, userRequest);
 
-        CreateAccountResponse depositResponse = new DepositRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .post(depositRequest)
-                .extract()
-                .as(CreateAccountResponse.class);
+        //проверка, что деньги зачислены (получаем аккаунты, затем фильтруем аккаунты по айди
+        //и у отфильтрованного сравниваем баланс с размером депозита)
+        GetAccountsResponse[] updateAccounts = UserSteps.getAccounts(userRequest);
+        GetAccountsResponse accountById = Arrays.stream(updateAccounts).filter(acc -> acc.getId() == createdAccount.getId()).findFirst().orElseThrow();
+        softly.assertThat(accountById.getBalance()).isEqualTo((float) amount);
 
-        //проверка, что деньги зачислены (получили класс ответа и сравниваем баланс с суммой депозита)
-        softly.assertThat(depositResponse.getBalance())
-                .isEqualTo(amount);
     }
-
 
     private static Stream<Arguments> invalidDepositData() {
         return Stream.of(
@@ -72,7 +56,6 @@ public class DepositMoneyTest extends BaseTest {
                 Arguments.of(5000.01, "Deposit amount cannot exceed 5000")
         );
     }
-
 
     @ParameterizedTest
     @MethodSource("invalidDepositData")
@@ -109,7 +92,7 @@ public class DepositMoneyTest extends BaseTest {
         GetAccountsResponse[] updatedAccounts = UserSteps.getAccounts(userRequest);
 
         softly.assertThat(updatedAccounts)
-                .anyMatch(account -> account.getId() == createdAccount.getId() &&
+                .anyMatch(account -> account.getAccountNumber().equals(createdAccount.getAccountNumber()) &&
                         account.getBalance() == createdAccount.getBalance());
     }
 
@@ -130,9 +113,9 @@ public class DepositMoneyTest extends BaseTest {
                 .anyMatch(account ->
                         account.getAccountNumber().equals(createdAccount.getAccountNumber()));
 
-        //депозит денег на созданный ранее счет с невалидными данными
+        //депозит денег на несуществующий айди
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(RandomData.getRandomId())
+                .id(RandomData.getNonExistingId())
                 .balance(RandomData.getRandomAmount())
                 .build();
 
@@ -147,7 +130,7 @@ public class DepositMoneyTest extends BaseTest {
         GetAccountsResponse[] updatedAccounts = UserSteps.getAccounts(userRequest);
 
         softly.assertThat(updatedAccounts)
-                .anyMatch(account -> account.getId() == createdAccount.getId() &&
+                .anyMatch(account -> account.getAccountNumber().equals(createdAccount.getAccountNumber()) &&
                         account.getBalance() == createdAccount.getBalance());
     }
 }
