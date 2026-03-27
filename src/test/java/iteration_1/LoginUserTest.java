@@ -1,63 +1,48 @@
 package iteration_1;
 
-import io.restassured.http.ContentType;
-import org.apache.http.HttpStatus;
+import generators.RandomData;
+import models.CreateUserRequest;
+import models.LoginUserRequest;
+import models.UserRole;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
+import requests.AdminCreateUserRequester;
+import requests.LoginUserRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
-import static io.restassured.RestAssured.given;
 
-public class LoginUserTest extends StepsBeforeTest {
-
+public class LoginUserTest extends BaseTest {
     @Test
     public void adminCanGenerateAuthTokenTest() {
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "admin",
-                          "password": "admin"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=");
+        LoginUserRequest userRequest = LoginUserRequest.builder()
+                .username("admin")
+                .password("admin")
+                .build();
+
+        new LoginUserRequester(RequestSpecs.unauthSpec(),
+                ResponseSpecs.requestReturnsOK())
+                .post(userRequest);
     }
 
     @Test
     public void userCanGenerateAuthTokenTest() {
         //создание пользователя
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body("""
-                        {
-                          "username": "Kate2000",
-                          "password": "Kate2000#",
-                          "role": "USER"
-                        }""") //Authorization: Basic S2F0ZTIwMDA6S2F0ZTIwMDAj
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED);
+        CreateUserRequest userRequest = CreateUserRequest.builder()
+                .username(RandomData.getUsername())
+                .password(RandomData.getPassword())
+                .role(UserRole.USER.toString())
+                .build();
+
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(),
+                ResponseSpecs.entityWasCreated())
+                .post(userRequest);
+
         //получаем токен юзера
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .body("""
-                        {
-                          "username": "Kate2000",
-                          "password": "Kate2000#"
-                        }
-                        """)
-                .post("http://localhost:4111/api/v1/auth/login")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .header("Authorization", Matchers.notNullValue());
+        new LoginUserRequester(RequestSpecs.unauthSpec(),
+                ResponseSpecs.requestReturnsOK())
+                .post(LoginUserRequest.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
+                        .build())
+                .header(ResponseSpecs.AUTHORIZATION_HEADER, Matchers.notNullValue());
     }
 }

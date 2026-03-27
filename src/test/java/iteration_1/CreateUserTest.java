@@ -1,47 +1,43 @@
 package iteration_1;
 
-import io.restassured.http.ContentType;
-import org.apache.http.HttpStatus;
-import org.hamcrest.Matchers;
+import models.CreateUserRequest;
+import models.CreateUserResponse;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import requests.AdminCreateUserRequester;
+import specs.RequestSpecs;
+import specs.ResponseSpecs;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import static io.restassured.RestAssured.given;
-
-public class CreateUserTest extends StepsBeforeTest {
+public class CreateUserTest extends BaseTest {
 
     public static Stream<Arguments> userValidData() {
         return Stream.of(
-                Arguments.of("a1._-", "Password33$", "USER"),
-                Arguments.of("Kate2003", "Kate2000#", "USER")
+                Arguments.of("a5._-", "Password33$", "USER"),
+                Arguments.of("Kate11", "Kate2000#", "USER")
         );
     }
 
     @MethodSource("userValidData")
     @ParameterizedTest
     public void adminCanCreatedUserWithCorrectDataTest(String username, String password, String role) {
-        String requestBody = String.format("""
-                {
-                  "username": "%s",
-                  "password": "%s",
-                  "role": "%s"
-                }""", username, password, role);
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body(requestBody)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_CREATED)
-                .body("username", Matchers.equalTo(username))
-                .body("password", Matchers.not(Matchers.equalTo(password)))
-                .body("role", Matchers.equalTo(role));
+        //создание пользователя
+        CreateUserRequest createUserRequest = CreateUserRequest.builder()
+                .username(username)
+                .password(password)
+                .role(role)
+                .build();
+
+        CreateUserResponse createUserResponse = new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.entityWasCreated())
+                .post(createUserRequest)
+                .extract().as(CreateUserResponse.class);
+
+        softly.assertThat(createUserRequest.getUsername()).isEqualTo(createUserResponse.getUsername());
+        softly.assertThat(createUserRequest.getPassword()).isNotEqualTo(createUserResponse.getPassword());
+        softly.assertThat(createUserRequest.getRole()).isEqualTo(createUserResponse.getRole());
     }
 
     public static Stream<Arguments> userInvalidData() {
@@ -94,24 +90,13 @@ public class CreateUserTest extends StepsBeforeTest {
     @MethodSource("userInvalidData")
     @ParameterizedTest
     public void adminCanNotCreatedUserWithInvalidDataTest(String username, String password, String role, String errorKey, List<String> errorValue) {
-        String requestBody = String.format("""
-                {
-                  "username": "%s",
-                  "password": "%s",
-                  "role": "%s"
-                }""", username, password, role);
+        CreateUserRequest createUserRequest = CreateUserRequest.builder()
+                .username(username)
+                .password(password)
+                .role(role)
+                .build();
 
-        given()
-                .contentType(ContentType.JSON)
-                .accept(ContentType.JSON)
-                .header("Authorization", "Basic YWRtaW46YWRtaW4=")
-                .body(requestBody)
-                .post("http://localhost:4111/api/v1/admin/users")
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                //.body(errorKey, Matchers.equalTo(errorValue)); //не работает,тк в первом варианте аргументов массив строк в теле ответа
-                .body(errorKey,
-                        Matchers.containsInAnyOrder(errorValue.toArray()));
+        new AdminCreateUserRequester(RequestSpecs.adminSpec(), ResponseSpecs.requestReturnsBadRequest(errorKey, errorValue))
+                .post(createUserRequest);
     }
 }
