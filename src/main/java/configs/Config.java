@@ -8,6 +8,9 @@ public class Config {
     private static final Config INSTANCE = new Config();
     private final Properties properties = new Properties();
 
+    public static final String ADMIN_LOGIN = "adminLogin";
+    public static final String ADMIN_PASSWORD = "adminPassword";
+
     private Config(){
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")){
             if (input == null) {throw new RuntimeException("config.properties not found in resources");

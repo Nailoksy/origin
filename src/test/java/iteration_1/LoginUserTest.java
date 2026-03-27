@@ -18,8 +18,8 @@ public class LoginUserTest extends BaseTest {
     @Test
     public void adminCanGenerateAuthTokenTest() {
         LoginUserRequest userRequest = LoginUserRequest.builder()
-                .username(Config.getProperty("adminLogin"))
-                .password(Config.getProperty("adminPassword"))
+                .username(Config.getProperty(Config.ADMIN_LOGIN))
+                .password(Config.getProperty(Config.ADMIN_PASSWORD))
                 .build();
 
         new ValidatedCrudRequester<CreateUserResponse>(RequestSpecs.unauthSpec(),

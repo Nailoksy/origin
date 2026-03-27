@@ -50,15 +50,12 @@ public class UpdateNameTest extends BaseTest {
                 .name(name)
                 .build();
 
-        String updateNameResponse = new CrudRequester(RequestSpecs.authAsUser(
+        new CrudRequester(RequestSpecs.authAsUser(
                 createUser.getUsername(), createUser.getPassword()),
                 Endpoint.UPDATE,
                 ResponseSpecs.requestReturnsBadStringRequest(errorMessage))
-                .update(nameRequest)
-                .extract()
-                .asString();
+                .update(nameRequest);
 
-        softly.assertThat(updateNameResponse).as("Check error message for invalid name").isEqualTo(errorMessage);
     }
 
 

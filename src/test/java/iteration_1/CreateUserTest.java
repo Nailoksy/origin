@@ -2,6 +2,7 @@ package iteration_1;
 
 import models.CreateUserRequest;
 import models.CreateUserResponse;
+import models.GetAllUsersResponse;
 import models.comparison.ModelAssertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -9,9 +10,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import requests.skelethon.requests.CrudRequester;
 import requests.skelethon.requests.Endpoint;
 import requests.skelethon.requests.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -105,5 +108,9 @@ public class CreateUserTest extends BaseTest {
                 Endpoint.ADMIN_USER,
                 ResponseSpecs.requestReturnsBadRequest(errorKey, errorValue))
                 .post(createUserRequest);
-    }
+
+        //проверка, что юзер не создан
+        GetAllUsersResponse[] allUsers = AdminSteps.getAllUsers();
+        softly.assertThat(allUsers)
+                .noneMatch(user -> user.getUsername().equals(username));  }
 }
