@@ -15,8 +15,6 @@ public class ResponseSpecs {
     }
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final long NON_EXISTENT_ACCOUNT_ID = 10L;
-    public static final double INVALID_DEPOSIT_AMOUNT = 100.00;
 
     //200
     public static ResponseSpecification requestReturnsOK() {
@@ -51,6 +49,14 @@ public class ResponseSpecs {
     public static ResponseSpecification requestReturnsForbidden() {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .build();
+    }
+
+    public static ResponseSpecification returnsOkAndAuthHeader() {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_OK)
+                //пришлось вручную добавить тип иначе компилятор не пропускал
+                .expectHeader(AUTHORIZATION_HEADER, (org.hamcrest.Matcher) Matchers.notNullValue())
                 .build();
     }
 

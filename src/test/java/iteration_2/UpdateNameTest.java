@@ -8,11 +8,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import requests.skelethon.requests.CrudRequester;
 import requests.skelethon.requests.Endpoint;
+import requests.skelethon.requests.ValidatedCrudRequester;
 import requests.steps.AdminSteps;
 import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 public class UpdateNameTest extends BaseTest {
@@ -45,16 +47,33 @@ public class UpdateNameTest extends BaseTest {
         //создание пользователя
         CreateUserRequest createUser = AdminSteps.createUser();
 
+        //сохраняем данные пользователя до изменения имени
+        GetAllUsersResponse beforeName = Arrays.stream(AdminSteps.getAllUsers())
+                .filter(user -> user.getUsername().equals(createUser.getUsername()))
+                .findFirst()
+                .orElseThrow();
+
         //изменение имени
         UpdateNameRequest nameRequest = UpdateNameRequest.builder()
                 .name(name)
                 .build();
 
-        new CrudRequester(RequestSpecs.authAsUser(
+         new CrudRequester(RequestSpecs.authAsUser(
                 createUser.getUsername(), createUser.getPassword()),
                 Endpoint.UPDATE,
                 ResponseSpecs.requestReturnsBadStringRequest(errorMessage))
                 .update(nameRequest);
+        //запрашиваем данные пользователя после попытки изменения имени
+         GetAllUsersResponse afterName = Arrays.stream(AdminSteps.getAllUsers())
+                .filter(user -> user.getUsername().equals(createUser.getUsername()))
+                .findFirst()
+                .orElseThrow();
+
+        // проверяем, что имя после неудачной попытки обновления не изменилось
+        softly.assertThat(beforeName.getName())
+                .isEqualTo(afterName.getName());
+
+
 
     }
 

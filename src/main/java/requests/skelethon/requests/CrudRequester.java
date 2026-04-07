@@ -4,7 +4,6 @@ import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import io.restassured.specification.ResponseSpecification;
 import models.BaseModel;
-import models.CreateAccountResponse;
 import requests.skelethon.interfaces.CrudEndpointInterface;
 
 import static io.restassured.RestAssured.given;

@@ -4,7 +4,6 @@ import configs.Config;
 import models.CreateUserRequest;
 import models.CreateUserResponse;
 import models.LoginUserRequest;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import requests.skelethon.requests.CrudRequester;
 import requests.skelethon.requests.Endpoint;
@@ -37,9 +36,8 @@ public class LoginUserTest extends BaseTest {
         //позитивный, но т.к в конце проверяем хедер, то берем CrudRequester
         new CrudRequester(RequestSpecs.unauthSpec(),
                 Endpoint.LOGIN_USER,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
-                .build())
-                .header(ResponseSpecs.AUTHORIZATION_HEADER, Matchers.notNullValue());
+                ResponseSpecs.returnsOkAndAuthHeader())
+                .post(LoginUserRequest.builder().username(userRequest.getUsername())
+                        .password(userRequest.getPassword()).build());
     }
 }
