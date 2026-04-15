@@ -15,17 +15,18 @@ public class ResponseSpecs {
     }
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    //201
-    public static ResponseSpecification entityWasCreated() {
-        return defaultResponseBuilder()
-                .expectStatusCode(HttpStatus.SC_CREATED)
-                .build();
-    }
 
     //200
     public static ResponseSpecification requestReturnsOK() {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_OK)
+                .build();
+    }
+
+    //201
+    public static ResponseSpecification entityWasCreated() {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_CREATED)
                 .build();
     }
 
@@ -48,6 +49,14 @@ public class ResponseSpecs {
     public static ResponseSpecification requestReturnsForbidden() {
         return defaultResponseBuilder()
                 .expectStatusCode(HttpStatus.SC_FORBIDDEN)
+                .build();
+    }
+
+    public static ResponseSpecification returnsOkAndAuthHeader() {
+        return defaultResponseBuilder()
+                .expectStatusCode(HttpStatus.SC_OK)
+                //пришлось вручную добавить тип иначе компилятор не пропускал
+                .expectHeader(AUTHORIZATION_HEADER, (org.hamcrest.Matcher) Matchers.notNullValue())
                 .build();
     }
 

@@ -1,7 +1,10 @@
 package generators;
 
+import models.GetAllUsersResponse;
 import org.apache.commons.lang3.RandomStringUtils;
+import requests.steps.AdminSteps;
 
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.commons.lang3.RandomStringUtils.*;
@@ -19,8 +22,15 @@ public class RandomData {
                 randomNumeric(3) + "%$#";
     }
 
-    public static long getRandomId() {
-        return Long.MAX_VALUE;
+    public static long getNonExistingId() {
+    GetAllUsersResponse[] allUsers = AdminSteps.getAllUsers();
+
+        long maxId = Arrays.stream(allUsers)
+                .mapToLong(GetAllUsersResponse::getId)
+                .max()
+                .orElseThrow();
+
+        return maxId + 1;
     }
 
     public static int getRandomAmount(){

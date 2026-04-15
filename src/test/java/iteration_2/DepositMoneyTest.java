@@ -3,86 +3,52 @@ package iteration_2;
 
 import generators.RandomData;
 import iteration_1.BaseTest;
-import models.CreateAccountResponse;
-import models.CreateUserRequest;
-import models.DepositRequest;
-import models.UserRole;
-import org.hamcrest.Matchers;
+import models.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.AdminCreateUserRequester;
-import requests.CreateAccountRequester;
-import requests.GetAccountsRequester;
-import requests.DepositRequester;
+import requests.skelethon.requests.CrudRequester;
+import requests.skelethon.requests.Endpoint;
+import requests.steps.AdminSteps;
+import requests.steps.UserSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
-
-
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 
 public class DepositMoneyTest extends BaseTest {
 
-
     @ParameterizedTest
     @ValueSource(doubles = {0.01, 4999.99, 5000.00})
     public void userCanDepositHisAccountTest(double amount) {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        //создаем аккаунт(счет)
+        CreateAccountResponse createdAccount = UserSteps.createAccount(userRequest);
 
-        //создаем аккаунт(счет) и получаем ID
-        CreateAccountResponse createdAccount = new CreateAccountRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts = UserSteps.getAccounts(userRequest);
 
-        long accountId1 = createdAccount.getId();
-
-        //проверка, что счет создан(сначала получаем аккаунты)
-        CreateAccountResponse[] accounts = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
-
-        //затем проверяем, что аккаунт совпадает с созданным
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
         softly.assertThat(accounts).isNotEmpty();
         softly.assertThat(accounts)
-                .anyMatch(account -> account.getId() == accountId1);
+                .anyMatch(account ->
+                        account.getAccountNumber().equals(createdAccount.getAccountNumber()));
 
         //депозит денег на созданный ранее счет
-        DepositRequest depositRequest = DepositRequest.builder()
-                .id(accountId1)
-                .balance(amount)
-                .build();
+        UserSteps.depositMoney(createdAccount.getId(), amount, userRequest);
 
-        CreateAccountResponse depositResponse = new DepositRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .post(depositRequest)
-                .extract()
-                .as(CreateAccountResponse.class);
+        //проверка, что деньги зачислены (получаем аккаунты, затем фильтруем аккаунты по айди
+        //и у отфильтрованного сравниваем баланс с размером депозита)
+        GetAccountsResponse[] updateAccounts = UserSteps.getAccounts(userRequest);
+        GetAccountsResponse accountById = Arrays.stream(updateAccounts).filter(acc -> acc.getId() == createdAccount.getId()).findFirst().orElseThrow();
+        softly.assertThat(accountById.getBalance()).isEqualTo((float) amount);
 
-//проверка, что деньги зачислены (получили класс ответа и сравниваем баланс с суммой депозита)
-        softly.assertThat(depositResponse.getBalance())
-                .isEqualTo(amount);
     }
-
 
     private static Stream<Arguments> invalidDepositData() {
         return Stream.of(
@@ -91,125 +57,80 @@ public class DepositMoneyTest extends BaseTest {
         );
     }
 
-
     @ParameterizedTest
     @MethodSource("invalidDepositData")
     public void userCanNotDepositHisAccountWithInvalidAmountTest(double amount, String errorMessage) {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        //создаем аккаунт(счет)
+        CreateAccountResponse createdAccount = UserSteps.createAccount(userRequest);
 
-        //создаем аккаунт(счет) и получаем ID
-        CreateAccountResponse createAccount = new CreateAccountRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts = UserSteps.getAccounts(userRequest);
 
-        long accountId1 = createAccount.getId();
-
-        //проверка, что счет создан(сначала получаем аккаунты)
-        CreateAccountResponse[] accounts = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
-
-        //затем проверяем, что аккаунт совпадает с созданным
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
         softly.assertThat(accounts).isNotEmpty();
         softly.assertThat(accounts)
-                .anyMatch(account -> account.getId() == accountId1);
+                .anyMatch(account ->
+                        account.getAccountNumber().equals(createdAccount.getAccountNumber()));
 
         //депозит денег на созданный ранее счет с невалидными данными
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(accountId1)
+                .id(createdAccount.getId())
                 .balance(amount)
                 .build();
 
-        new DepositRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        new CrudRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpecs.requestReturnsBadStringRequest(errorMessage))
                 .post(depositRequest);
 
         // проверка, что деньги не зачислены(снова делаем запрос к аккаунтам и проверяем баланс, который
-        // должен быть равен 0)
-        CreateAccountResponse[] updatedAccounts = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
+        // должен быть равен 0 как при создании аккаунта
+        GetAccountsResponse[] updatedAccounts = UserSteps.getAccounts(userRequest);
 
         softly.assertThat(updatedAccounts)
-                .anyMatch(account -> account.getId() == accountId1 && account.getBalance() == 0.0F);
+                .anyMatch(account -> account.getAccountNumber().equals(createdAccount.getAccountNumber()) &&
+                        account.getBalance() == createdAccount.getBalance());
     }
 
     @Test
     public void userCanNotDepositToNonExistentAccountTest() {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
-        new AdminCreateUserRequester(
-                RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        //создаем аккаунт(счет)
+        CreateAccountResponse createdAccount = UserSteps.createAccount(userRequest);
 
-        //создаем аккаунт(счет) и получаем ID
-        CreateAccountResponse createAccount = new CreateAccountRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.entityWasCreated())
-                .post()
-                .extract()
-                .as(CreateAccountResponse.class);
+        //получаем все аккаунты
+        GetAccountsResponse[] accounts = UserSteps.getAccounts(userRequest);
 
-        long accountId1 = createAccount.getId();
-
-        //проверка, что счет создан(сначала получаем аккаунты)
-        CreateAccountResponse[] accounts = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
-
-        //затем проверяем, что аккаунт совпадает с созданным
+        //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
         softly.assertThat(accounts).isNotEmpty();
         softly.assertThat(accounts)
-                .anyMatch(account -> account.getId() == accountId1);
+                .anyMatch(account ->
+                        account.getAccountNumber().equals(createdAccount.getAccountNumber()));
 
-        //депозит денег на созданный ранее счет с невалидными данными
+        //депозит денег на несуществующий айди
         DepositRequest depositRequest = DepositRequest.builder()
-                .id(RandomData.getRandomId())
+                .id(RandomData.getNonExistingId())
                 .balance(RandomData.getRandomAmount())
                 .build();
 
-        new DepositRequester(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+        new CrudRequester(
+                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
+                Endpoint.DEPOSIT,
                 ResponseSpecs.requestReturnsForbidden())
                 .post(depositRequest);
 
         // проверка, что деньги не зачислены(снова делаем запрос к аккаунтам и проверяем баланс, который
-        // должен быть равен 0)
-        CreateAccountResponse[] updatedAccounts = new GetAccountsRequester(
-                RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),
-                ResponseSpecs.requestReturnsOK())
-                .get()
-                .extract()
-                .as(CreateAccountResponse[].class);
+        // должен быть равен 0 как при создании аккаунта
+        GetAccountsResponse[] updatedAccounts = UserSteps.getAccounts(userRequest);
 
         softly.assertThat(updatedAccounts)
-                .anyMatch(account -> account.getId() == accountId1 && account.getBalance() == 0.0F);
-
-
+                .anyMatch(account -> account.getAccountNumber().equals(createdAccount.getAccountNumber()) &&
+                        account.getBalance() == createdAccount.getBalance());
     }
 }

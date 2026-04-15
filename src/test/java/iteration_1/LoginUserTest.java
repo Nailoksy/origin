@@ -1,13 +1,14 @@
 package iteration_1;
 
-import generators.RandomData;
+import configs.Config;
 import models.CreateUserRequest;
+import models.CreateUserResponse;
 import models.LoginUserRequest;
-import models.UserRole;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import requests.AdminCreateUserRequester;
-import requests.LoginUserRequester;
+import requests.skelethon.requests.CrudRequester;
+import requests.skelethon.requests.Endpoint;
+import requests.skelethon.requests.ValidatedCrudRequester;
+import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
@@ -16,11 +17,12 @@ public class LoginUserTest extends BaseTest {
     @Test
     public void adminCanGenerateAuthTokenTest() {
         LoginUserRequest userRequest = LoginUserRequest.builder()
-                .username("admin")
-                .password("admin")
+                .username(Config.getProperty(Config.ADMIN_LOGIN))
+                .password(Config.getProperty(Config.ADMIN_PASSWORD))
                 .build();
 
-        new LoginUserRequester(RequestSpecs.unauthSpec(),
+        new ValidatedCrudRequester<CreateUserResponse>(RequestSpecs.unauthSpec(),
+                Endpoint.LOGIN_USER,
                 ResponseSpecs.requestReturnsOK())
                 .post(userRequest);
     }
@@ -28,21 +30,14 @@ public class LoginUserTest extends BaseTest {
     @Test
     public void userCanGenerateAuthTokenTest() {
         //создание пользователя
-        CreateUserRequest userRequest = CreateUserRequest.builder()
-                .username(RandomData.getUsername())
-                .password(RandomData.getPassword())
-                .role(UserRole.USER.toString())
-                .build();
-
-        new AdminCreateUserRequester(RequestSpecs.adminSpec(),
-                ResponseSpecs.entityWasCreated())
-                .post(userRequest);
+        CreateUserRequest userRequest = AdminSteps.createUser();
 
         //получаем токен юзера
-        new LoginUserRequester(RequestSpecs.unauthSpec(),
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder().username(userRequest.getUsername()).password(userRequest.getPassword())
-                        .build())
-                .header(ResponseSpecs.AUTHORIZATION_HEADER, Matchers.notNullValue());
+        //позитивный, но т.к в конце проверяем хедер, то берем CrudRequester
+        new CrudRequester(RequestSpecs.unauthSpec(),
+                Endpoint.LOGIN_USER,
+                ResponseSpecs.returnsOkAndAuthHeader())
+                .post(LoginUserRequest.builder().username(userRequest.getUsername())
+                        .password(userRequest.getPassword()).build());
     }
 }
