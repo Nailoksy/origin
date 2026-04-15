@@ -1,8 +1,8 @@
-package iteration_2;
+package iteration_2.api;
 
 
 import generators.RandomData;
-import iteration_1.BaseTest;
+import iteration_1.api.BaseTest;
 import models.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
