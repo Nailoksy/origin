@@ -1,4 +1,4 @@
-package iteration_1;
+package iteration_1.api;
 
 import models.GetAllUsersResponse;
 import org.assertj.core.api.SoftAssertions;
@@ -11,9 +11,7 @@ import requests.steps.AdminSteps;
 import specs.RequestSpecs;
 import specs.ResponseSpecs;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class BaseTest {
     protected SoftAssertions softly;

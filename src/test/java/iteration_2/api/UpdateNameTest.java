@@ -1,6 +1,6 @@
-package iteration_2;
+package iteration_2.api;
 
-import iteration_1.BaseTest;
+import iteration_1.api.BaseTest;
 import models.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -8,7 +8,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import requests.skelethon.requests.CrudRequester;
 import requests.skelethon.requests.Endpoint;
-import requests.skelethon.requests.ValidatedCrudRequester;
 import requests.steps.AdminSteps;
 import requests.steps.UserSteps;
 import specs.RequestSpecs;
