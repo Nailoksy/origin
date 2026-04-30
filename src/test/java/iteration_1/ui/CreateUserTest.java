@@ -1,62 +1,38 @@
 package iteration_1.ui;
 
+import api.models.GetAllUsersResponse;
+import api.requests.steps.AdminSteps;
 import com.codeborne.selenide.*;
-import generators.RandomModelGenerator;
-import models.CreateUserRequest;
-import models.CreateUserResponse;
-import models.comparison.ModelAssertions;
-import org.apache.http.HttpStatus;
+import api.generators.RandomModelGenerator;
+import api.models.CreateUserRequest;
+import api.models.comparison.ModelAssertions;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
-import specs.RequestSpecs;
+import ui.pages.AdminPanelPage;
+import ui.pages.BankAlerts;
 
 import java.util.Arrays;
 
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.switchTo;
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CreateUserTest extends BaseTestUI {
     @Test
     public void adminCanCreateUserTest() {
         // ШАГ 1: админ залогинился в банке
-        CreateUserRequest admin = CreateUserRequest.builder().username("admin").password("admin").build();
+        CreateUserRequest admin = CreateUserRequest.getAdmin();
 
-        Selenide.open("/login");
-
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(admin.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(admin.getPassword());
-        $("button").click();
-
-        $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
+        //авторизация через локалсторадж
+        authAsUser(admin);
 
         //ШАГ 2: админ создает пользователя в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
 
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(newUser.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(newUser.getPassword());
-        $(Selectors.byText("Add User")).click();
-
         //ШАГ 3: проверка, что есть алерт "User created successfully!"
-        Alert alert = switchTo().alert();
-        assertEquals(alert.getText(), "✅ User created successfully!");
-        alert.accept();
-
-        //ШАГ 4: проверка, что пользователь отображается на UI
-        ElementsCollection allUsersFromDashboard = $(Selectors.byText("All Users")).parent().findAll("li");
-        allUsersFromDashboard.findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
+        //в нем же ШАГ 4: проверка, что пользователь отображается на UI
+        new AdminPanelPage().open().createUser(newUser).checkAlertMessageAndAccept(BankAlerts.USER_CREATED_SUCCESSFULLY.getMessage())
+                .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
 
         //ШАГ 5: проверка, что пользователь был создан на API
-        CreateUserResponse[] users = given()
-                .spec(RequestSpecs.adminSpec())
-                .get("http://localhost:4111/api/v1/admin/users")
-                .then().assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract().as(CreateUserResponse[].class);
-
-        CreateUserResponse createUser = Arrays.stream(users)
+        GetAllUsersResponse createUser = Arrays.stream(AdminSteps.getAllUsers())
                 .filter(user -> user.getUsername().equals(newUser.getUsername()))
                 .findFirst().get();
 
@@ -66,42 +42,21 @@ public class CreateUserTest extends BaseTestUI {
     @Test
     public void adminCanNotCreateUserWithInvalidDataTest() {
         // ШАГ 1: админ залогинился в банке
-        CreateUserRequest admin = CreateUserRequest.builder().username("admin").password("admin").build();
+        CreateUserRequest admin = CreateUserRequest.getAdmin();
 
-        Selenide.open("/login");
-
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(admin.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(admin.getPassword());
-        $("button").click();
-
-        $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
+        authAsUser(admin);
 
         //ШАГ 2: админ создает пользователя в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
         newUser.setUsername("a");
 
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(newUser.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(newUser.getPassword());
-        $(Selectors.byText("Add User")).click();
-
-        //ШАГ 3: проверка, что есть алерт "User created successfully!"
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("Username must be between 3 and 15 characters");
-        alert.accept();
-
-        //ШАГ 4: проверка, что пользователь НЕ отображается на UI
-        ElementsCollection allUsersFromDashboard = $(Selectors.byText("All Users")).parent().findAll("li");
-        allUsersFromDashboard.findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldNotBe(Condition.exist);
+        //ШАГ 3: проверка, что есть алерт и что нет нашего юзера
+        new AdminPanelPage().open().createUser(newUser)
+                .checkAlertMessageAndAccept(BankAlerts.USERNAME_MUST_BE_BETWEEN_3_AND_15_CHARACTERS.getMessage())
+                .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldNotBe(Condition.exist);
 
         //ШАГ 5: проверка, что пользователь НЕ был создан на API
-        CreateUserResponse[] users = given()
-                .spec(RequestSpecs.adminSpec())
-                .get("http://localhost:4111/api/v1/admin/users")
-                .then().assertThat()
-                .statusCode(HttpStatus.SC_OK)
-                .extract().as(CreateUserResponse[].class);
-
-        long usersWithUsernameAsNewUser = Arrays.stream(users)
+        long usersWithUsernameAsNewUser = Arrays.stream(AdminSteps.getAllUsers())
                 .filter(user -> user.getUsername().equals(newUser.getUsername()))
                 .count();
 

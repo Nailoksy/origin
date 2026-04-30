@@ -1,17 +1,20 @@
 package iteration_2.api;
 
+import api.models.CreateUserRequest;
+import api.models.GetAllUsersResponse;
+import api.models.UpdateNameRequest;
+import api.models.UpdateNameResponse;
 import iteration_1.api.BaseTest;
-import models.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import requests.skelethon.requests.CrudRequester;
-import requests.skelethon.requests.Endpoint;
-import requests.steps.AdminSteps;
-import requests.steps.UserSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.requests.skelethon.requests.CrudRequester;
+import api.requests.skelethon.requests.Endpoint;
+import api.requests.steps.AdminSteps;
+import api.requests.steps.UserSteps;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 
 import java.util.Arrays;
 import java.util.stream.Stream;

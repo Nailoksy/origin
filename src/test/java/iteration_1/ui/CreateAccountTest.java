@@ -1,23 +1,15 @@
 package iteration_1.ui;
 
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
-import models.CreateAccountResponse;
-import models.CreateUserRequest;
-import models.LoginUserRequest;
+import api.models.GetAccountsResponse;
+import api.requests.steps.UserSteps;
+import api.models.CreateUserRequest;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
-import requests.skelethon.requests.CrudRequester;
-import requests.skelethon.requests.Endpoint;
-import requests.steps.AdminSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.requests.steps.AdminSteps;
+import ui.pages.BankAlerts;
+import ui.pages.UserDashboardPage;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Arrays;
 
-import static com.codeborne.selenide.Selenide.*;
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateAccountTest extends BaseTestUI {
@@ -29,52 +21,19 @@ public class CreateAccountTest extends BaseTestUI {
         // ШАГ 1: юзер логинится в банке
         CreateUserRequest user = AdminSteps.createUser();
 
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN_USER,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-
-        Selenide.open("/");
-
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-
-        Selenide.open("/dashboard");
+        authAsUser(user);
 
         // ШАГИ ТЕСТА
         // ШАГ 4: юзер создает аккаунт
-        $(Selectors.byText("➕ Create New Account")).click();
+        new UserDashboardPage().open().createNewAccount();
+
+        //получение аккаунта на API
+        GetAccountsResponse createdAccount = Arrays.stream(UserSteps.getAccounts(user)).findFirst().get();
 
         // ШАГ 5: проверка, что аккаунт создался на UI(проверка алерта)
-        Alert alert = switchTo().alert();
-        String alertText = alert.getText();
-
-        assertThat(alertText).contains("✅ New Account Created! Account Number:");
-
-        alert.accept();
-
-        //вытащить номер аккаунта из алерта
-        Pattern pattern = Pattern.compile("Account Number: (\\w+)");
-        Matcher matcher = pattern.matcher(alertText);
-
-        matcher.find();
-
-        String createdAccNumber = matcher.group(1);
+        new UserDashboardPage().checkAlertMessageAndAccept(BankAlerts.NEW_ACCOUNT_CREATED.getMessage() + createdAccount.getAccountNumber());
 
         // ШАГ 6: проверка, что аккаунт был создан на API
-        CreateAccountResponse[] existingUserAccounts = given()
-                .spec(RequestSpecs.authAsUser(user.getUsername(), user.getPassword()))
-                .get("http://localhost:4111/api/v1/customer/accounts")
-                .then().assertThat()
-                .extract().as(CreateAccountResponse[].class);
-
-        assertThat(existingUserAccounts).hasSize(1);
-
-        CreateAccountResponse createdAccount = existingUserAccounts[0];
-
-        assertThat(createdAccount).isNotNull();
         assertThat(createdAccount.getBalance()).isZero();
     }
 }

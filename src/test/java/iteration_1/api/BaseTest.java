@@ -1,15 +1,15 @@
 package iteration_1.api;
 
-import models.GetAllUsersResponse;
+import api.models.GetAllUsersResponse;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import requests.skelethon.requests.CrudRequester;
-import requests.skelethon.requests.Endpoint;
-import requests.steps.AdminSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.requests.skelethon.requests.CrudRequester;
+import api.requests.skelethon.requests.Endpoint;
+import api.requests.steps.AdminSteps;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 
 import java.util.Arrays;
 

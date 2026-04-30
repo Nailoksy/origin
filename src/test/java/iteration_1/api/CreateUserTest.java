@@ -1,18 +1,18 @@
 package iteration_1.api;
 
-import models.CreateUserRequest;
-import models.CreateUserResponse;
-import models.GetAllUsersResponse;
-import models.comparison.ModelAssertions;
+import api.models.CreateUserRequest;
+import api.models.CreateUserResponse;
+import api.models.GetAllUsersResponse;
+import api.models.comparison.ModelAssertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import requests.skelethon.requests.CrudRequester;
-import requests.skelethon.requests.Endpoint;
-import requests.skelethon.requests.ValidatedCrudRequester;
-import requests.steps.AdminSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.requests.skelethon.requests.CrudRequester;
+import api.requests.skelethon.requests.Endpoint;
+import api.requests.skelethon.requests.ValidatedCrudRequester;
+import api.requests.steps.AdminSteps;
+import api.specs.RequestSpecs;
+import api.specs.ResponseSpecs;
 
 import java.util.List;
 import java.util.stream.Stream;
