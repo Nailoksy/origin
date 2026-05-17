@@ -1,39 +1,28 @@
 package iteration_1.ui;
 
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selectors;
-import com.codeborne.selenide.Selenide;
-import models.CreateUserRequest;
+import api.models.CreateUserRequest;
 import org.junit.jupiter.api.Test;
-import requests.steps.AdminSteps;
-
-
-import static com.codeborne.selenide.Selenide.$;
+import api.requests.steps.AdminSteps;
+import ui.pages.AdminPanelPage;
+import ui.pages.LoginPage;
+import ui.pages.UserDashboardPage;
 
 public class LoginUserTest extends BaseTestUI {
     @Test
     public void adminCanLoginWithCorrectDataTest() {
-        CreateUserRequest admin = CreateUserRequest.builder().username("admin").password("admin").build();
+        CreateUserRequest admin = CreateUserRequest.getAdmin();
 
-        Selenide.open("/login");
-
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(admin.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(admin.getPassword());
-        $("button").click();
-
-        $(Selectors.byText("Admin Panel")).shouldBe(Condition.visible);
+        new LoginPage().open().login(admin.getUsername(), admin.getPassword())
+                .getPage(AdminPanelPage.class).getAdminPanelText().shouldBe(Condition.visible);
     }
 
     @Test
     public void userCanLoginWithCorrectDataTest() {
         CreateUserRequest user = AdminSteps.createUser();
 
-        Selenide.open("/login");
-
-        $(Selectors.byAttribute("placeholder", "Username")).sendKeys(user.getUsername());
-        $(Selectors.byAttribute("placeholder", "Password")).sendKeys(user.getPassword());
-        $("button").click();
-
-        $(Selectors.byClassName("welcome-text")).shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
+        new LoginPage().open().login(user.getUsername(), user.getPassword())
+                .getPage(UserDashboardPage.class).getWelcomeText()
+                .shouldBe(Condition.visible).shouldHave(Condition.text(LoginPage.NONAME_WELCOME_TEXT));
     }
 }

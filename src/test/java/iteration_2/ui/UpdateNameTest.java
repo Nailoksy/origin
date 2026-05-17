@@ -1,20 +1,15 @@
 package iteration_2.ui;
 
 import com.codeborne.selenide.Condition;
-import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
 
 import iteration_1.ui.BaseTestUI;
-import models.CreateUserRequest;
-import models.GetAllUsersResponse;
-import models.LoginUserRequest;
+import api.models.CreateUserRequest;
+import api.models.GetAllUsersResponse;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.Alert;
-import requests.skelethon.requests.CrudRequester;
-import requests.skelethon.requests.Endpoint;
-import requests.steps.AdminSteps;
-import specs.RequestSpecs;
-import specs.ResponseSpecs;
+import api.requests.steps.AdminSteps;
+import ui.pages.BankAlerts;
+import ui.pages.EditProfilePage;
 
 import java.util.Arrays;
 
@@ -31,36 +26,13 @@ public class UpdateNameTest extends BaseTestUI {
         CreateUserRequest user = AdminSteps.createUser();
         //3. Админ выходит из аккаунта
         //4. Юзер залогинился
-        //сохраняем токен для LocalStorage
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN_USER,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-        //Вносим токен в LocalStorage
-        Selenide.open("/");
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
     //ШАГИ ТЕСТА
         //1. Юзер перешел на страницу изменения профиля
-        Selenide.open("/edit-profile");
-        $(Selectors.byText("✏\uFE0F Edit Profile")).shouldBe(Condition.visible);
-
-        //2. Юзер ввел корректное имя
-        $(Selectors.byAttribute("placeholder", "Enter new name")).sendKeys(NEW_NAME_CORRECT);
-
-        //3. Нажал Save Changes
-        $$("button")
-                .findBy(Condition.text("\uD83D\uDCBE Save Changes"))
-                .click();
-
-        //Проверка, что имя изменилось на UI (алерт)
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("✅ Name updated successfully!");
-        alert.accept();
-
+        new EditProfilePage().open().updateName(NEW_NAME_CORRECT)
+                .checkAlertMessageAndAccept(BankAlerts.NAME_UPDATED_SUCCESSFULLY.getMessage());
+        //Проверка, что имя изменилось на UI (рефреш не запихнулось в метод, поэтому проверка отдельно)
         Selenide.refresh();
         $(".user-name")
                 .shouldHave(Condition.exactText(NEW_NAME_CORRECT));
@@ -87,36 +59,15 @@ public class UpdateNameTest extends BaseTestUI {
 
         //3. Админ выходит из аккаунта
         //4. Юзер залогинился
-        //сохраняем токен для LocalStorage
-        String userAuthHeader = new CrudRequester(
-                RequestSpecs.unauthSpec(),
-                Endpoint.LOGIN_USER,
-                ResponseSpecs.requestReturnsOK())
-                .post(LoginUserRequest.builder().username(user.getUsername()).password(user.getPassword()).build())
-                .extract()
-                .header("Authorization");
-        //Вносим токен в LocalStorage
-        Selenide.open("/");
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        authAsUser(user);
 
         //ШАГИ ТЕСТА
         //1. Юзер перешел на страницу изменения профиля
-        Selenide.open("/edit-profile");
-        $(Selectors.byText("✏\uFE0F Edit Profile")).shouldBe(Condition.visible);
+        //1. Юзер перешел на страницу изменения профиля
+        new EditProfilePage().open().updateName(NEW_NAME_CORRECT.replaceAll(" ", ""))
+                .checkAlertMessageAndAccept(BankAlerts.NAME_MUST_BE_CONTAIN_TWO_WORDS.getMessage());
 
-        //2. Юзер ввел некорректное имя
-        $(Selectors.byAttribute("placeholder", "Enter new name")).sendKeys(NEW_NAME_CORRECT.replaceAll(" ", ""));
-
-        //3. Нажал Save Changes
-        $$("button")
-                .findBy(Condition.text("\uD83D\uDCBE Save Changes"))
-                .click();
-
-        //Проверка, что имя не изменилось на UI (алерт)
-        Alert alert = switchTo().alert();
-        assertThat(alert.getText()).contains("Name must contain two words with letters only");
-        alert.accept();
-
+        //проверка, что имя не изменилось на UI
         Selenide.refresh();
         $(".user-name")
                 .shouldHave(Condition.exactText("Noname"));
