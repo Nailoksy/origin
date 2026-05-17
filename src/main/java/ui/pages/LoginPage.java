@@ -5,6 +5,9 @@ import com.codeborne.selenide.SelenideElement;
 import static com.codeborne.selenide.Selenide.$;
 
 public class LoginPage extends BasePage<LoginPage> {
+    //мне кажется, строка с приветствием всё должна быть в классе UserDashboard, а не здесь
+   public static final String NONAME_WELCOME_TEXT = "Welcome, noname!";
+
    private SelenideElement button = $("button");
 
     @Override

@@ -1,5 +1,6 @@
 package iteration_1.ui;
 
+import api.generators.RandomData;
 import api.models.GetAllUsersResponse;
 import api.requests.steps.AdminSteps;
 import com.codeborne.selenide.*;
@@ -29,7 +30,7 @@ public class CreateUserTest extends BaseTestUI {
         //ШАГ 3: проверка, что есть алерт "User created successfully!"
         //в нем же ШАГ 4: проверка, что пользователь отображается на UI
         new AdminPanelPage().open().createUser(newUser).checkAlertMessageAndAccept(BankAlerts.USER_CREATED_SUCCESSFULLY.getMessage())
-                .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\nUSER")).shouldBe(Condition.visible);
+                .getAllUsers().findBy(Condition.exactText(newUser.getUsername() + "\n" + AdminPanelPage.USER_ROLE)).shouldBe(Condition.visible);
 
         //ШАГ 5: проверка, что пользователь был создан на API
         GetAllUsersResponse createUser = Arrays.stream(AdminSteps.getAllUsers())
@@ -48,7 +49,7 @@ public class CreateUserTest extends BaseTestUI {
 
         //ШАГ 2: админ создает пользователя в банке
         CreateUserRequest newUser = RandomModelGenerator.generate(CreateUserRequest.class);
-        newUser.setUsername("a");
+        newUser.setUsername(RandomData.getUsernameWithLength(1));
 
         //ШАГ 3: проверка, что есть алерт и что нет нашего юзера
         new AdminPanelPage().open().createUser(newUser)

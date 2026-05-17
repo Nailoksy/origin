@@ -36,4 +36,9 @@ public class RandomData {
     public static int getRandomAmount(){
         return ThreadLocalRandom.current().nextInt(1, 5001);
     }
+
+
+    public static String getUsernameWithLength(int length){
+        return RandomStringUtils.randomAlphabetic(length);
+    }
 }

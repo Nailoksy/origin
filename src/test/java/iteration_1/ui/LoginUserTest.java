@@ -23,6 +23,6 @@ public class LoginUserTest extends BaseTestUI {
 
         new LoginPage().open().login(user.getUsername(), user.getPassword())
                 .getPage(UserDashboardPage.class).getWelcomeText()
-                .shouldBe(Condition.visible).shouldHave(Condition.text("Welcome, noname!"));
+                .shouldBe(Condition.visible).shouldHave(Condition.text(LoginPage.NONAME_WELCOME_TEXT));
     }
 }

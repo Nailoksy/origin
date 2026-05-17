@@ -10,6 +10,7 @@ import static com.codeborne.selenide.Selenide.$;
 
 @Getter
 public class AdminPanelPage extends BasePage<AdminPanelPage>{
+    public static final String USER_ROLE = "USER";
     private SelenideElement adminPanelText =  $(Selectors.byText("Admin Panel"));
     private SelenideElement addUserButton =  $(Selectors.byText("Add User"));
 
