@@ -1,10 +1,11 @@
 package iteration_2.ui;
 
+import common.annotation.Browsers;
+import common.annotation.UserSession;
+import common.storage.SessionStorage;
 import iteration_1.ui.BaseTestUI;
-import api.models.CreateUserRequest;
 import api.models.GetAccountsResponse;
 import org.junit.jupiter.api.Test;
-import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 import ui.pages.BankAlerts;
 import ui.pages.DepositPage;
@@ -16,26 +17,22 @@ public class DepositMoneyTest extends BaseTestUI {
     private static final double TOTAL_DEPOSIT = 5000;
 
     @Test
+    @Browsers({"chrome"})
+    @UserSession
     public void userCanDepositHisAccountTest() {
-    //ПРЕДШАГИ на API:
-        //1.создание пользователя
-        CreateUserRequest user = AdminSteps.createUser();
-
         //2.создаем аккаунт(счет)
-        UserSteps.createAccount(user);
+        UserSteps.createAccount(SessionStorage.getUser());
 
         //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
-        GetAccountsResponse[] existingUserAccounts = UserSteps.getAccounts(user);
+        GetAccountsResponse[] existingUserAccounts = UserSteps.getAccounts(SessionStorage.getUser());
         assertThat(existingUserAccounts).hasSize(1);
 
         GetAccountsResponse createdAccount = existingUserAccounts[0];
         assertThat(createdAccount).isNotNull();
         assertThat(createdAccount.getBalance()).isZero();
 
-    //ШАГИ ТЕСТА
-        //1. Юзер перешел на страницу Deposit(авторизация как пользователь)
-        authAsUser(user);
-
+        //ШАГИ ТЕСТА
+        //1. Юзер перешел на страницу Deposit(авторизация как пользователь через аннотацию)
         //2. Юзер Нажал на выбор аккаунта Select Account и выбрал первый созданный аккаунт:
         //3. Юзер нажал Enter Amount: и написал сумму депозита до 5000
         //находим все кнопки, ищем по имени депозит, клик.
@@ -45,23 +42,22 @@ public class DepositMoneyTest extends BaseTestUI {
                 .checkAlertMessageAndAccept(BankAlerts.SUCCESSFULLY_DEPOSITED.getMessage() + AMOUNT_FOR_DEPOSIT);
 
         //Проверка, что баланс соответствует на API
-        double balanceAfterDeposit = UserSteps.getAccounts(user)[0].getBalance();
+        double balanceAfterDeposit = UserSteps.getAccounts(SessionStorage.getUser())[0].getBalance();
         assertThat(balanceAfterDeposit).isEqualTo(AMOUNT_FOR_DEPOSIT);
 
 
     }
 
     @Test
+    @Browsers({"chrome"})
+    @UserSession
     public void userCanNotDepositHisAccountWithInvalidAmountTest() {
-    //ПРЕДШАГИ на API:
-        //1.создание пользователя
-        CreateUserRequest user = AdminSteps.createUser();
-
+        //ПРЕДШАГИ на API:
         //2.создаем аккаунт(счет)
-        UserSteps.createAccount(user);
+        UserSteps.createAccount(SessionStorage.getUser());
 
         //проверяем, что массив не пустой и в нем есть наш аккаунт, сравниваем аккаунты
-        GetAccountsResponse[] existingUserAccounts = UserSteps.getAccounts(user);
+        GetAccountsResponse[] existingUserAccounts = UserSteps.getAccounts(SessionStorage.getUser());
 
         assertThat(existingUserAccounts).hasSize(1);
 
@@ -70,9 +66,8 @@ public class DepositMoneyTest extends BaseTestUI {
         assertThat(createdAccount).isNotNull();
         assertThat(createdAccount.getBalance()).isZero();
 
-    //ШАГИ ТЕСТА
-        //1. Юзер перешел на страницу Deposit(авторизация как пользователь)
-        authAsUser(user);
+        //ШАГИ ТЕСТА
+        //1. Юзер перешел на страницу Deposit(авторизация как пользователь через аннотацию)
         //2. Юзер Нажал на выбор аккаунта Select Account и выбрал первый созданный аккаунт:
         //3. Юзер нажал Enter Amount: и написал сумму депозита до 5000
         //находим все кнопки, ищем по имени депозит, клик.
@@ -82,7 +77,7 @@ public class DepositMoneyTest extends BaseTestUI {
                 .checkAlertMessageAndAccept(BankAlerts.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000.getMessage());
 
         //Проверка, что баланс соответствует на API
-        double balanceAfterDeposit = UserSteps.getAccounts(user)[0].getBalance();
+        double balanceAfterDeposit = UserSteps.getAccounts(SessionStorage.getUser())[0].getBalance();
         assertThat(balanceAfterDeposit).isEqualTo(createdAccount.getBalance());
 
 
