@@ -9,6 +9,13 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
 public class UserSteps {
+    private String username;
+    private String password;
+
+    public UserSteps(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
     @Step("Создание аккаунта юзером")
     public static CreateAccountResponse createAccount(CreateUserRequest userRequest) {
         return new ValidatedCrudRequester<CreateAccountResponse>(RequestSpecs.authAsUser(userRequest.getUsername(), userRequest.getPassword()),

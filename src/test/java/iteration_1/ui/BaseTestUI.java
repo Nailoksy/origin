@@ -1,24 +1,19 @@
 package iteration_1.ui;
 
 import api.configs.Config;
-import api.models.CreateUserRequest;
 import com.codeborne.selenide.Configuration;
-import api.models.GetAllUsersResponse;
-import com.codeborne.selenide.Selenide;
+import common.extensions.AdminSessionExtension;
+import common.extensions.BrowserMatchExtension;
+import common.extensions.UserSessionExtension;
 import iteration_1.api.BaseTest;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import api.requests.skelethon.requests.CrudRequester;
-import api.requests.skelethon.requests.Endpoint;
-import api.requests.steps.AdminSteps;
-import api.specs.RequestSpecs;
-import api.specs.ResponseSpecs;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import java.util.Arrays;
 import java.util.Map;
 
-import static com.codeborne.selenide.Selenide.executeJavaScript;
-
+@ExtendWith(AdminSessionExtension.class)
+@ExtendWith(UserSessionExtension.class)
+@ExtendWith(BrowserMatchExtension.class)
 public class BaseTestUI extends BaseTest {
     @BeforeAll
     public static void setupSelenoid() {
@@ -30,16 +25,5 @@ public class BaseTestUI extends BaseTest {
         Configuration.browserCapabilities.setCapability("selenoid:options",
                 Map.of("enableVNC", true, "enableLog", true)
         );
-    }
-
-    //положить токен в локалСторадж
-    public void authAsUser(String username, String password) {
-        Selenide.open("/login");
-        String userAuthHeader = RequestSpecs.getUserAuthHeader(username, password);
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
-    }
-    //положить токен в локалСторадж - перегрузка, чтобы передать реквест
-    public void authAsUser(CreateUserRequest createUserRequest) {
-        authAsUser(createUserRequest.getUsername(), createUserRequest.getPassword());
     }
 }
