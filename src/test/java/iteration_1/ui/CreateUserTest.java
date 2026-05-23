@@ -3,13 +3,13 @@ package iteration_1.ui;
 import api.generators.RandomData;
 import api.models.GetAllUsersResponse;
 import api.requests.steps.AdminSteps;
-import com.codeborne.selenide.*;
 import api.generators.RandomModelGenerator;
 import api.models.CreateUserRequest;
 import api.models.comparison.ModelAssertions;
 import common.annotation.AdminSession;
 import common.annotation.Browsers;
 import org.junit.jupiter.api.Test;
+import ui.elements.UserBage;
 import ui.pages.AdminPanelPage;
 import ui.pages.BankAlerts;
 
@@ -28,8 +28,11 @@ public class CreateUserTest extends BaseTestUI {
 
         //ШАГ 3: проверка, что есть алерт "User created successfully!"
         //в нем же ШАГ 4: проверка, что пользователь отображается на UI
-        assertTrue(new AdminPanelPage().open().createUser(newUser).checkAlertMessageAndAccept(BankAlerts.USER_CREATED_SUCCESSFULLY.getMessage())
-                .getAllUsers().stream().anyMatch(userBage -> userBage.getUsername().equals(newUser.getUsername())));
+        UserBage newUserBage = new AdminPanelPage().open().createUser(newUser).checkAlertMessageAndAccept(BankAlerts.USER_CREATED_SUCCESSFULLY.getMessage())
+                .findUserByUsername(newUser.getUsername());
+
+        assertThat(newUserBage).as("UserBage should exist on Dashboard after user creation").isNotNull();
+
 
         //ШАГ 5: проверка, что пользователь был создан на API
         GetAllUsersResponse createUser = Arrays.stream(AdminSteps.getAllUsers())
