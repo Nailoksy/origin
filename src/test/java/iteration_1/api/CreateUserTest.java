@@ -1,5 +1,6 @@
 package iteration_1.api;
 
+import api.generators.RandomData;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.GetAllUsersResponse;
@@ -21,8 +22,8 @@ public class CreateUserTest extends BaseTest {
 
     public static Stream<Arguments> userValidData() {
         return Stream.of(
-                Arguments.of("a5._-", "Password33$", "USER"),
-                Arguments.of("Kate11", "Kate2000#", "USER")
+                Arguments.of(RandomData.generateMinValidUsername(), "Password33$", "USER"),
+                Arguments.of(RandomData.generateMinValidUsername(), "Kate2000#", "USER")
         );
     }
 
@@ -37,13 +38,13 @@ public class CreateUserTest extends BaseTest {
                 .build();
 
 //т.к позитивный(экстрактим createUserRequest), то берем ValidatedCrudRequester
-        CreateUserResponse createUserResponce = new ValidatedCrudRequester<CreateUserResponse>
+        CreateUserResponse createUserResponse = new ValidatedCrudRequester<CreateUserResponse>
                 (RequestSpecs.adminSpec(),
                 Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())
                 .post(createUserRequest);
 
-        ModelAssertions.assertThatModels(createUserRequest, createUserResponce).match();
+        ModelAssertions.assertThatModels(createUserRequest, createUserResponse).match();
     }
 
     public static Stream<Arguments> userInvalidData() {

@@ -41,4 +41,12 @@ public class RandomData {
     public static String getUsernameWithLength(int length){
         return RandomStringUtils.randomAlphabetic(length);
     }
+
+
+    public static String generateMinValidUsername() {
+        char letter = (char) ('a' + ThreadLocalRandom.current().nextInt(0, 26));
+        char digit = (char) ('0' + ThreadLocalRandom.current().nextInt(0, 10));
+
+        return "" + letter + "." + digit + "-_";
+    }
 }
