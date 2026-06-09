@@ -5,6 +5,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import api.requests.steps.AdminSteps;
 
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.apache.commons.lang3.RandomStringUtils.*;
@@ -44,9 +45,6 @@ public class RandomData {
 
 
     public static String generateMinValidUsername() {
-        char letter = (char) ('a' + ThreadLocalRandom.current().nextInt(0, 26));
-        char digit = (char) ('0' + ThreadLocalRandom.current().nextInt(0, 10));
-
-        return "" + letter + "." + digit + "-_";
+        return "TestUser_" + UUID.randomUUID().toString().substring(0, 6);
     }
 }

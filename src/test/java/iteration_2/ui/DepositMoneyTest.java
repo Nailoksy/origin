@@ -5,6 +5,7 @@ import common.annotation.UserSession;
 import common.storage.SessionStorage;
 import iteration_1.ui.BaseTestUI;
 import api.models.GetAccountsResponse;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.UserSteps;
 import ui.pages.BankAlerts;
@@ -47,7 +48,6 @@ public class DepositMoneyTest extends BaseTestUI {
 
 
     }
-
     @Test
     @Browsers({"chrome"})
     @UserSession

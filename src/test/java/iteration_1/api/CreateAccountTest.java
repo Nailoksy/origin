@@ -9,7 +9,7 @@ import api.requests.steps.UserSteps;
 
 public class CreateAccountTest extends BaseTest{
     @Test
-    public void userCanCreateAccountTest() {
+    public synchronized void userCanCreateAccountTest() {
         //создание пользователя
         CreateUserRequest userRequest = AdminSteps.createUser();
 

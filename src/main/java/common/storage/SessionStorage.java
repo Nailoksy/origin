@@ -9,26 +9,49 @@ import java.util.List;
 
 //Где хранятся созданные пользователи и шаги юзера. Паттерн Синглтон.
 public class SessionStorage {
-    private static final  SessionStorage INSTANCE = new SessionStorage();
+    /* ThreadLocal - способ сделать SessionStorage потокобезопасным
+    Каждый лог, обращаясь к INSTANCE.get() получают свою КОПИЮ
+     */
+    private static final ThreadLocal<SessionStorage> INSTANCE = ThreadLocal.withInitial(SessionStorage::new);
 
     private final LinkedHashMap<CreateUserRequest, UserSteps> userStepsMap = new LinkedHashMap<>();
 
-    private SessionStorage() {};
+    //Добавлено: Хранилище ID пользователей для будущего удаления после теста
+    private static final ThreadLocal<List<Long>> USER_IDS =
+            ThreadLocal.withInitial(ArrayList::new);
+
+    private SessionStorage() {
+    }
+
+    //Добавлено: Методы для добавления и получения айди юзера
+    public static void addUserId(Long id) {
+        USER_IDS.get().add(id);
+    }
+
+    public static List<Long> getUserIds() {
+        return new ArrayList<>(USER_IDS.get());
+    }
+
+    ;
 
     public static void addUsers(List<CreateUserRequest> users) {
-        for (CreateUserRequest user : users){
-            INSTANCE.userStepsMap.put(user, new UserSteps(user.getUsername(), user.getPassword()));
+        for (CreateUserRequest user : users) {
+            INSTANCE.get().userStepsMap.put(
+                    user,
+                    new UserSteps(user.getUsername(), user.getPassword())
+            );
         }
     }
 
     /**
      * Возвращаем объект CreateUserRequest по его порядковому номеру в списке созданных пользователей.
+     *
      * @param number Порядковый номер начинается с 1 (а не с 0).
      * @return Объект CreateUserRequest, соответствующий указанному порядковому номеру
      */
     //Получение юзера по индексу
     public static CreateUserRequest getUser(int number) {
-        return new ArrayList<>(INSTANCE.userStepsMap.keySet()).get(number-1);
+        return new ArrayList<>(INSTANCE.get().userStepsMap.keySet()).get(number - 1);
     }
 
     //Получение первого пользователя
@@ -38,7 +61,7 @@ public class SessionStorage {
 
     //Получение степов
     public static UserSteps getSteps(int number) {
-        return new ArrayList<>(INSTANCE.userStepsMap.values()).get(number-1);
+        return new ArrayList<>(INSTANCE.get().userStepsMap.values()).get(number - 1);
     }
 
     //Получение первого пользователя
@@ -46,7 +69,16 @@ public class SessionStorage {
         return getSteps(1);
     }
 
-    public static void clear(){
-        INSTANCE.userStepsMap.clear();
+    public static void clear() {
+        INSTANCE.get().userStepsMap.clear();
+        //
+        USER_IDS.get().clear();
+    }
+
+    // AI правки: новый метод — сброс ThreadLocal после теста, чтобы не утекала память в пуле потоков
+    public static void remove() {
+        INSTANCE.remove();
+        //очищаем список пользователей
+        USER_IDS.remove();
     }
 }
