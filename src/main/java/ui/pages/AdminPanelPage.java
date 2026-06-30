@@ -9,6 +9,7 @@ import lombok.Getter;
 import ui.elements.UserBage;
 
 import java.util.List;
+import java.util.Objects;
 
 import static com.codeborne.selenide.Selenide.$;
 
@@ -43,9 +44,21 @@ public class AdminPanelPage extends BasePage<AdminPanelPage>{
     }
 
     public UserBage findUserByUsername (String username) {
-        return RetryUtils.retry(
-                () -> getAllUsers().stream().filter(uB -> uB.getUsername().equals(username)).findFirst().orElse(null),
-                result -> result != null, 3, 1000);
+        SelenideElement element = RetryUtils.retry(
+                () -> $(Selectors.byText("All Users"))
+                        .parent()
+                        .$$("li")
+                        .findBy(com.codeborne.selenide.Condition.text(username)),
+                Objects::nonNull,
+                10,
+                500
+        );
+
+        return new UserBage(element);
     }
+//        return RetryUtils.retry(
+//                () -> getAllUsers().stream().filter(uB -> uB.getUsername().equals(username)).findFirst().orElse(null),
+//                result -> result != null, 3, 1000);
+//    }
 
 }

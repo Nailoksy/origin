@@ -1,6 +1,7 @@
 package common.storage;
 
 import api.models.CreateUserRequest;
+import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 
 import java.util.ArrayList;
@@ -16,23 +17,8 @@ public class SessionStorage {
 
     private final LinkedHashMap<CreateUserRequest, UserSteps> userStepsMap = new LinkedHashMap<>();
 
-    //Добавлено: Хранилище ID пользователей для будущего удаления после теста
-    private static final ThreadLocal<List<Long>> USER_IDS =
-            ThreadLocal.withInitial(ArrayList::new);
-
     private SessionStorage() {
     }
-
-    //Добавлено: Методы для добавления и получения айди юзера
-    public static void addUserId(Long id) {
-        USER_IDS.get().add(id);
-    }
-
-    public static List<Long> getUserIds() {
-        return new ArrayList<>(USER_IDS.get());
-    }
-
-    ;
 
     public static void addUsers(List<CreateUserRequest> users) {
         for (CreateUserRequest user : users) {
@@ -41,6 +27,13 @@ public class SessionStorage {
                     new UserSteps(user.getUsername(), user.getPassword())
             );
         }
+    }
+
+    public static void addUser(CreateUserRequest user) {
+        INSTANCE.get().userStepsMap.put(
+                user,
+                new UserSteps(user.getUsername(), user.getPassword())
+        );
     }
 
     /**
@@ -71,14 +64,42 @@ public class SessionStorage {
 
     public static void clear() {
         INSTANCE.get().userStepsMap.clear();
-        //
-        USER_IDS.get().clear();
     }
 
-    // AI правки: новый метод — сброс ThreadLocal после теста, чтобы не утекала память в пуле потоков
-    public static void remove() {
-        INSTANCE.remove();
-        //очищаем список пользователей
-        USER_IDS.remove();
+    public static void deleteAllUsers() {
+        System.out.println(
+                "Thread = " + Thread.currentThread().getName()
+                        + ", users in storage = "
+                        + INSTANCE.get().userStepsMap.size()
+        );
+        INSTANCE.get().userStepsMap.keySet().stream()
+                .map(CreateUserRequest::getId)
+                .forEach(id -> {
+                    try {
+                        AdminSteps.deleteUserById(id);
+                    } catch (Exception e) {
+                        System.out.println("Пользователь с  " + id + " уже удален или не найден");
+                    }
+                });
+//        INSTANCE.get().userStepsMap.keySet().stream()
+//                .map(CreateUserRequest::getId)
+//                .forEach(AdminSteps::deleteUserById);
+
+
+//        GetAllUsersResponse[] users = AdminSteps.getAllUsers();
+//
+//        for (CreateUserRequest user : INSTANCE.get().userStepsMap.keySet()) {
+//
+//            Long id = Arrays.stream(users)
+//                    .filter(u -> u.getUsername().equals(user.getUsername()))
+//                    .findFirst()
+//                    .orElseThrow()
+//                    .getId();
+//
+//            AdminSteps.deleteUserById(id);
+//        }
+    }
+    public static boolean isEmpty() {
+        return INSTANCE.get().userStepsMap.isEmpty();
     }
 }

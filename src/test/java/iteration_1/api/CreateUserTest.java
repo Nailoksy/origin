@@ -5,6 +5,7 @@ import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
 import api.models.GetAllUsersResponse;
 import api.models.comparison.ModelAssertions;
+import common.storage.UserDeleteRegistry;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -43,6 +44,8 @@ public class CreateUserTest extends BaseTest {
                 Endpoint.ADMIN_USER,
                 ResponseSpecs.entityWasCreated())
                 .post(createUserRequest);
+
+        UserDeleteRegistry.add(createUserResponse.getId());
 
         ModelAssertions.assertThatModels(createUserRequest, createUserResponse).match();
     }

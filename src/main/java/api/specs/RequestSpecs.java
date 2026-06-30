@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestSpecs {
+//    private static Map<String, String> authHeaders = new HashMap<>(Map.of("admin", "Basic YWRtaW46YWRtaW4="));
     private static final ConcurrentHashMap<String, String> authHeaders =
         new ConcurrentHashMap<>(
                 Map.of("admin", "Basic YWRtaW46YWRtaW4=")
@@ -58,40 +59,48 @@ public class RequestSpecs {
                 )
                 .build();
     }
+// (было)
+//public static String getUserAuthHeader(String username, String password) {
+//    String userAuthHeader;
+//
+//    if (!authHeaders.containsKey(username)) {
+//        userAuthHeader = new CrudRequester(
+//                RequestSpecs.unauthSpec(),
+//                Endpoint.LOGIN_USER,
+//                ResponseSpecs.requestReturnsOK())
+//                .post(LoginUserRequest.builder().username(username).password(password).build())
+//                .extract()
+//                .header("Authorization");
+//
+//        authHeaders.put(username, userAuthHeader);
+//    } else {
+//        userAuthHeader = authHeaders.get(username);
+//    }
+//
+//    return userAuthHeader;
+//}
 
     public static String getUserAuthHeader(String username, String password) {
-        return authHeaders.computeIfAbsent(username, u ->
-                new CrudRequester(
-                        RequestSpecs.unauthSpec(),
-                        Endpoint.LOGIN_USER,
-                        ResponseSpecs.requestReturnsOK()
-                )
-                        .post(
-                                LoginUserRequest.builder()
-                                        .username(username)
-                                        .password(password)
-                                        .build()
-                        )
-                        .extract()
-                        .header("Authorization")
-        );
+        String token = authHeaders.get(username);
+        if (token == null) {
+            synchronized (RequestSpecs.class) {
+                token = authHeaders.get(username);
+                if (token == null) {
+                    token = new CrudRequester(
+                            RequestSpecs.unauthSpec(),
+                            Endpoint.LOGIN_USER,
+                            ResponseSpecs.requestReturnsOK()
+                    )
+                            .post(LoginUserRequest.builder()
+                                    .username(username)
+                                    .password(password)
+                                    .build())
+                            .extract()
+                            .header("Authorization");
+                    authHeaders.put(username, token);
+                }
+            }
+        }
+        return token;
     }
-// (было)
-//    public static String getUserAuthHeader(String username, String password) {
-//        String userAuthHeader;
-//        if (!authHeaders.containsKey(username)) {
-//            userAuthHeader = new CrudRequester(
-//                    RequestSpecs.unauthSpec(),
-//                    Endpoint.LOGIN_USER,
-//                    ResponseSpecs.requestReturnsOK())
-//                    .post(LoginUserRequest.builder().username(username).password(password).build())
-//                    .extract()
-//                    .header("Authorization");
-//            authHeaders.put(username, userAuthHeader);
-//        } else {
-//            userAuthHeader = authHeaders.get(username);
-//        }
-//        return userAuthHeader;
-//    }
-
 }

@@ -2,6 +2,7 @@ package api.requests.steps;
 
 import api.generators.RandomModelGenerator;
 import common.storage.SessionStorage;
+import common.storage.UserDeleteRegistry;
 import io.qameta.allure.Step;
 import api.models.CreateUserRequest;
 import api.models.CreateUserResponse;
@@ -13,7 +14,6 @@ import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
 import java.util.Arrays;
-import java.util.List;
 
 
 public class AdminSteps {
@@ -21,14 +21,15 @@ public class AdminSteps {
     public static CreateUserRequest createUser(){
         CreateUserRequest userRequest = RandomModelGenerator.generate(CreateUserRequest.class);
 
-        CreateUserResponse response =
-                new ValidatedCrudRequester<CreateUserResponse>(
+        CreateUserResponse createUserResponse = new ValidatedCrudRequester<CreateUserResponse>(
                         RequestSpecs.adminSpec(),
                         Endpoint.ADMIN_USER,
                         ResponseSpecs.entityWasCreated())
                         .post(userRequest);
 
-        SessionStorage.addUserId(response.getId());
+        userRequest.setId(createUserResponse.getId());
+        SessionStorage.addUser(userRequest);
+        UserDeleteRegistry.add(createUserResponse.getId());
 
         return userRequest;
     }
@@ -43,27 +44,24 @@ public class AdminSteps {
                 .as(GetAllUsersResponse[].class);
     }
 
-    //Добавлено: шаг удаления тестовых пользователей
     @Step("Удаление пользователя по id {id}")
-    public static void deleteUser(long id) {
+    public static void deleteUserById(long id) {
+        System.out.println("Пользователь с ID: " + id + " - будет удален.");
         new CrudRequester(
                 RequestSpecs.adminSpec(),
                 Endpoint.DELETE,
                 ResponseSpecs.noValidation())
                 .delete(id);
+
+        System.out.println("Пользователь с ID: " + id + " - удален");
     }
 
-    //Добавлено: шаг удаления всех пользователей
+    //Добавлено: шаг удаления ВСЕХ пользователей
     @Step("Удаление всех пользователей")
     public static void deleteAllUsers() {
-        Arrays.stream(AdminSteps.getAllUsers()).filter(u -> u.getUsername().startsWith("TestUser"))
+        Arrays.stream(AdminSteps.getAllUsers()).filter(u -> u.getUsername().startsWith("TestUser_"))
                 .map(GetAllUsersResponse::getId)
-                .forEach(id ->
-                        new CrudRequester(
-                                RequestSpecs.adminSpec(),
-                                Endpoint.DELETE,
-                                ResponseSpecs.noValidation())
-                                .delete(id)
+                .forEach(id -> deleteUserById(id)
                 );
     }
 }

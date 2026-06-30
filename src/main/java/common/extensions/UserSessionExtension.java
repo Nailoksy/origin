@@ -37,51 +37,13 @@ public class UserSessionExtension implements BeforeEachCallback, AfterEachCallba
         }
     }
 
-    // AI правки: новый метод — сброс ThreadLocal SessionStorage после каждого @UserSession теста
     @Override
-    public void afterEach(ExtensionContext extensionContext) {
-        if (extensionContext.getRequiredTestMethod().getAnnotation(UserSession.class) != null) {
+    public void afterEach(ExtensionContext extensionContext) throws Exception {
+        UserSession annotation = extensionContext.getRequiredTestMethod().getAnnotation(UserSession.class);
 
-            if (extensionContext.getRequiredTestMethod().getAnnotation(UserSession.class) == null) {
-                return;
-            }
-
-            List<Long> userIds = SessionStorage.getUserIds();
-
-            try {
-                for (Long id : userIds) {
-                    System.out.println("Удаляем пользователя id=" + id);
-                    AdminSteps.deleteUser(id);
-                }
-
-                System.out.println("Пользователь с ID: " + userIds + " удален.");
-
-            } finally {
-                SessionStorage.remove();
-            }
+        if (annotation != null && !SessionStorage.isEmpty()) {
+            SessionStorage.deleteAllUsers();
+            SessionStorage.clear();
         }
     }
-//    @Override
-//    public void beforeEach(ExtensionContext extensionContext) throws Exception {
-//        //ШАГ 1: Проверка, что у теста есть аннотация UserSession
-//        UserSession annotation = extensionContext.getRequiredTestMethod().getAnnotation(UserSession.class);
-//        if (annotation != null) {
-//            int userCount = annotation.value();
-//
-//            SessionStorage.clear();
-//
-//            ThreadLocal<List<CreateUserRequest>> users = ThreadLocal.withInitial(LinkedList::new);
-//
-//            for (int i = 0; i < userCount; i++) {
-//                CreateUserRequest user = AdminSteps.createUser();
-//                users.get().add(user);
-//
-//            }
-//            SessionStorage.addUsers(users.get());
-//
-//            int authAsUser = annotation.auth();
-//
-//            BasePage.authAsUser(SessionStorage.getUser(authAsUser));
-//        }
-//    }
 }

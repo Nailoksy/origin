@@ -32,6 +32,7 @@ public class RandomData {
                 .orElseThrow();
 
         return maxId + 1;
+//        return Integer.MAX_VALUE;
     }
 
     public static int getRandomAmount(){

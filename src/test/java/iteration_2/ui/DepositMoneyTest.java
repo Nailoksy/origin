@@ -38,7 +38,11 @@ public class DepositMoneyTest extends BaseTestUI {
         //3. Юзер нажал Enter Amount: и написал сумму депозита до 5000
         //находим все кнопки, ищем по имени депозит, клик.
         //проверка, что деньги внеслись на UI(проверка алерта)
-
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         new DepositPage().open().deposit(AMOUNT_FOR_DEPOSIT)
                 .checkAlertMessageAndAccept(BankAlerts.SUCCESSFULLY_DEPOSITED.getMessage() + AMOUNT_FOR_DEPOSIT);
 
@@ -73,6 +77,11 @@ public class DepositMoneyTest extends BaseTestUI {
         //находим все кнопки, ищем по имени депозит, клик.
         //проверка, что деньги внеслись на UI(проверка алерта)
 
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         new DepositPage().open().deposit(AMOUNT_FOR_DEPOSIT + TOTAL_DEPOSIT)
                 .checkAlertMessageAndAccept(BankAlerts.PLEASE_DEPOSIT_LESS_OR_EQUAL_TO_5000.getMessage());
 

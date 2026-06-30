@@ -59,8 +59,18 @@ public class TransferMoneyTest extends BaseTestUI {
         //5. Нажал Amount: Вписал сумму для перевода
         //6. Поставил галочку Confirm details are correct  и кнопка send transfer
         //7. Проверка, что деньги переведены на UI (Проверка алерта)
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         new TransferMoneyPage().open().transfer(createdAccount1.getAccountNumber(), createdAccount2.getAccountNumber(), MAX_DEPOSIT)
                 .checkAlertMessageAndAccept(BankAlerts.SUCCESSFULLY_TRANSFERRED.getMessage());
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
 
         //2. Проверка после перевода, что баланс второго аккаунта соответствует переводу на API
@@ -99,6 +109,11 @@ public class TransferMoneyTest extends BaseTestUI {
         depositMoney(account1.getId(), MAX_DEPOSIT, SessionStorage.getUser());
 
         //проверка, что деньги зачислены
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         GetAccountsResponse[] updateAccounts = UserSteps.getAccounts(SessionStorage.getUser());
         GetAccountsResponse updateAcc2 = Arrays.stream(updateAccounts).filter(acc -> acc.getId() == account1.getId()).findAny().orElseThrow();
         assertThat(updateAcc2.getBalance()).isEqualTo((float) MAX_DEPOSIT);
@@ -111,8 +126,18 @@ public class TransferMoneyTest extends BaseTestUI {
         //5. Нажал Amount: Вписал сумму для перевода
         //6. Поставил галочку Confirm details are correct  и кнопка send transfer
         //7. Проверка, что деньги переведены на UI (Проверка алерта)
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         new TransferMoneyPage().open().transfer(account1.getAccountNumber(), account2.getAccountNumber(), INVALID_TRANSFER)
                 .checkAlertMessageAndAccept(BankAlerts.ERROR_TRANSFER_AMOUNT.getMessage());
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         //2. Проверка после перевода, что баланс второго аккаунта остался равен 0 на API
         GetAccountsResponse[] updateAccountsAfterTransfer = UserSteps.getAccounts(SessionStorage.getUser());
