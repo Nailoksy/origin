@@ -17,7 +17,13 @@ public final class TestActionRetry {
     }
 
     public static void execute(String actionName, Runnable action, Runnable beforeRetry) {
-        executeThrowing(actionName, () -> action.run(), beforeRetry);
+        try {
+            executeThrowing(actionName, action::run, beforeRetry);
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void executeThrowing(String actionName, ThrowingRunnable action) throws Throwable {
