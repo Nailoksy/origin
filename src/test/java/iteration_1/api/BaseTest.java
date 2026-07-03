@@ -1,5 +1,6 @@
 package iteration_1.api;
 
+import common.extensions.RetryOnSystemFailureExtension;
 import common.extensions.TimingExtension;
 import common.extensions.UserCleanupExtension;
 import org.assertj.core.api.SoftAssertions;
@@ -8,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith({UserCleanupExtension.class, TimingExtension.class})
+@ExtendWith({UserCleanupExtension.class, TimingExtension.class, RetryOnSystemFailureExtension.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BaseTest {
     protected SoftAssertions softly;
