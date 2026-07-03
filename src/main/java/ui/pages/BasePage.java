@@ -2,6 +2,7 @@ package ui.pages;
 
 import api.models.CreateUserRequest;
 import api.specs.RequestSpecs;
+import common.utils.TestActionRetry;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
@@ -39,9 +40,14 @@ public abstract class BasePage <T extends BasePage>{
 
     //положить токен в локалСторадж
     public static void authAsUser(String username, String password) {
-        Selenide.open("/login");
-        String userAuthHeader = RequestSpecs.getUserAuthHeader(username, password);
-        executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+        TestActionRetry.execute(
+                "authAsUser(" + username + ")",
+                () -> {
+                    Selenide.open("/login");
+                    String userAuthHeader = RequestSpecs.getUserAuthHeader(username, password);
+                    executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
+                }
+        );
     }
     //положить токен в локалСторадж - перегрузка, чтобы передать реквест
     public static void authAsUser(CreateUserRequest createUserRequest) {

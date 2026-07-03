@@ -32,6 +32,7 @@ public final class SystemFailureDetector {
         String className = throwable.getClass().getName();
         return className.contains("TimeoutException")
                 || className.contains("WebDriverException")
+                || className.contains("AlertException")
                 || className.contains("SessionNotCreatedException")
                 || className.contains("UnreachableBrowserException");
     }
