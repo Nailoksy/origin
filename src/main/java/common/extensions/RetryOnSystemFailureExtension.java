@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 import ui.pages.BasePage;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class RetryOnSystemFailureExtension implements InvocationInterceptor {
@@ -25,17 +26,19 @@ public class RetryOnSystemFailureExtension implements InvocationInterceptor {
     public void interceptTestMethod(Invocation<Void> invocation,
                                     ReflectiveInvocationContext<Method> invocationContext,
                                     ExtensionContext extensionContext) throws Throwable {
-        executeWithRetry(invocation, extensionContext);
+        executeWithRetry(invocation, invocationContext, extensionContext);
     }
 
     @Override
     public void interceptTestTemplateMethod(Invocation<Void> invocation,
                                             ReflectiveInvocationContext<Method> invocationContext,
                                             ExtensionContext extensionContext) throws Throwable {
-        executeWithRetry(invocation, extensionContext);
+        executeWithRetry(invocation, invocationContext, extensionContext);
     }
 
-    private void executeWithRetry(Invocation<Void> invocation, ExtensionContext extensionContext) throws Throwable {
+    private void executeWithRetry(Invocation<Void> invocation,
+                                  ReflectiveInvocationContext<Method> invocationContext,
+                                  ExtensionContext extensionContext) throws Throwable {
         if (!isRetryEnabled(extensionContext)) {
             invocation.proceed();
             return;
@@ -46,7 +49,11 @@ public class RetryOnSystemFailureExtension implements InvocationInterceptor {
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
-                invocation.proceed();
+                if (attempt == 1) {
+                    invocation.proceed();
+                } else {
+                    invokeTestMethod(invocationContext, extensionContext);
+                }
                 return;
             } catch (Throwable throwable) {
                 lastFailure = throwable;
@@ -61,6 +68,20 @@ public class RetryOnSystemFailureExtension implements InvocationInterceptor {
         }
 
         throw lastFailure;
+    }
+
+    private void invokeTestMethod(ReflectiveInvocationContext<Method> invocationContext,
+                                  ExtensionContext extensionContext) throws Throwable {
+        Method method = invocationContext.getExecutable();
+        Object target = extensionContext.getRequiredTestInstance();
+        Object[] arguments = invocationContext.getArguments().toArray();
+
+        try {
+            method.setAccessible(true);
+            method.invoke(target, arguments);
+        } catch (InvocationTargetException e) {
+            throw e.getCause() != null ? e.getCause() : e;
+        }
     }
 
     private boolean isRetryEnabled(ExtensionContext extensionContext) {
