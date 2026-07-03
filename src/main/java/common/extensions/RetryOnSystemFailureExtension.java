@@ -38,14 +38,19 @@ public class RetryOnSystemFailureExtension implements InvocationInterceptor {
             return;
         }
 
-        TestActionRetry.executeThrowing(
-                extensionContext.getDisplayName(),
-                () -> invokeTestMethod(invocationContext, extensionContext),
-                () -> {
-                    TestActionRetry.prepareBrowserForRetry();
-                    restoreSession(extensionContext);
-                }
-        );
+        try {
+            invocation.proceed();
+        } catch (Throwable initialFailure) {
+            TestActionRetry.retryOnFailure(
+                    extensionContext.getDisplayName(),
+                    initialFailure,
+                    () -> invokeTestMethod(invocationContext, extensionContext),
+                    () -> {
+                        TestActionRetry.prepareBrowserForRetry();
+                        restoreSession(extensionContext);
+                    }
+            );
+        }
     }
 
     private void invokeTestMethod(ReflectiveInvocationContext<Method> invocationContext,

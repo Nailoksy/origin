@@ -53,6 +53,33 @@ public final class TestActionRetry {
         throw lastFailure;
     }
 
+    public static void retryOnFailure(String actionName,
+                                      Throwable initialFailure,
+                                      ThrowingRunnable action,
+                                      Runnable beforeRetry) throws Throwable {
+        int maxAttempts = readIntProperty("test.retry.maxAttempts", DEFAULT_MAX_ATTEMPTS);
+        Throwable lastFailure = initialFailure;
+
+        for (int attempt = 2; attempt <= maxAttempts; attempt++) {
+            if (!SystemFailureDetector.isRetryable(lastFailure)) {
+                throw lastFailure;
+            }
+
+            logRetry(actionName, attempt - 1, maxAttempts, lastFailure);
+            beforeRetry.run();
+            sleepBetweenRetries();
+
+            try {
+                action.run();
+                return;
+            } catch (Throwable throwable) {
+                lastFailure = throwable;
+            }
+        }
+
+        throw lastFailure;
+    }
+
     public static void prepareBrowserForRetry() {
         dismissAlertIfPresent();
         if (WebDriverRunner.hasWebDriverStarted()) {
