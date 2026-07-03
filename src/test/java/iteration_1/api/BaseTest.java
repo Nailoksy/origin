@@ -1,10 +1,12 @@
 package iteration_1.api;
 
 import api.models.GetAllUsersResponse;
+import common.extensions.RetryOnSystemFailureExtension;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import api.requests.skelethon.requests.CrudRequester;
 import api.requests.skelethon.requests.Endpoint;
 import api.requests.steps.AdminSteps;
@@ -13,6 +15,7 @@ import api.specs.ResponseSpecs;
 
 import java.util.Arrays;
 
+@ExtendWith(RetryOnSystemFailureExtension.class)
 public class BaseTest {
     protected SoftAssertions softly;
 
