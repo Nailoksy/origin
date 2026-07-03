@@ -1,6 +1,7 @@
 package ui.pages;
 
 import api.models.CreateUserRequest;
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
@@ -8,6 +9,7 @@ import common.utils.RetryUtils;
 import lombok.Getter;
 import ui.elements.UserBage;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,12 +55,10 @@ public class AdminPanelPage extends BasePage<AdminPanelPage>{
                 10,
                 500
         );
-
         return new UserBage(element);
     }
-//        return RetryUtils.retry(
-//                () -> getAllUsers().stream().filter(uB -> uB.getUsername().equals(username)).findFirst().orElse(null),
-//                result -> result != null, 3, 1000);
-//    }
-
+    public AdminPanelPage checkAdminPanelOpened() {
+        adminPanelText.shouldBe(Condition.visible, Duration.ofSeconds(15));
+        return this;
+    }
 }

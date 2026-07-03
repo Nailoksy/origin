@@ -3,6 +3,7 @@ package ui.pages;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
+import common.utils.WaitUtils;
 import lombok.Getter;
 
 import static com.codeborne.selenide.Selenide.$;
@@ -32,6 +33,7 @@ public class TransferMoneyPage extends BasePage <TransferMoneyPage>{
         enterRecipientAccountNumber.sendKeys(toAccountNumber);
         enterAmount.sendKeys(Double.toString(transferAmount));
         confirmChek.click();
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
         sendTransfer.click();
         return this;
     }

@@ -8,7 +8,6 @@ import api.models.CreateUserRequest;
 import api.models.comparison.ModelAssertions;
 import common.annotation.AdminSession;
 import common.annotation.Browsers;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import ui.elements.UserBage;
 import ui.pages.AdminPanelPage;

@@ -2,13 +2,11 @@ package iteration_1.ui;
 
 import api.configs.Config;
 import com.codeborne.selenide.Configuration;
-import com.codeborne.selenide.Selenide;
 import common.extensions.AdminSessionExtension;
 import common.extensions.BrowserMatchExtension;
 import common.extensions.UserSessionExtension;
 import iteration_1.api.BaseTest;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Map;
@@ -23,7 +21,7 @@ public class BaseTestUI extends BaseTest {
         Configuration.baseUrl = Config.getProperty("uiBaseUrl");
         Configuration.browser = Config.getProperty("uiBrowser");
         Configuration.browserSize = Config.getProperty("uiBrowserSize");
-        Configuration.headless = true;
+        Configuration.headless = false;
 
         Configuration.browserCapabilities.setCapability("selenoid:options",
                 Map.of("enableVNC", true, "enableLog", true)

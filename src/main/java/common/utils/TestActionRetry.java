@@ -92,7 +92,8 @@ public final class TestActionRetry {
             if (WebDriverRunner.hasWebDriverStarted()) {
                 Selenide.switchTo().alert().accept();
             }
-        } catch (Exception ignored) {
+            //было (Exception ignored)
+        } catch (Throwable ignored) {
         }
     }
 

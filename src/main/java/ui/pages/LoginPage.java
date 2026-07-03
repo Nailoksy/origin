@@ -1,6 +1,7 @@
 package ui.pages;
 
 import com.codeborne.selenide.SelenideElement;
+import common.utils.WaitUtils;
 
 import static com.codeborne.selenide.Selenide.$;
 
@@ -16,9 +17,12 @@ public class LoginPage extends BasePage<LoginPage> {
     }
 
     public LoginPage login(String username, String password) {
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
         usernameInput.sendKeys(username);
         passwordInput.sendKeys(password);
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
         button.click();
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
         return this;
     }
 }

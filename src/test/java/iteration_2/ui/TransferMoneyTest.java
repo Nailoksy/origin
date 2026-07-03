@@ -1,9 +1,9 @@
 package iteration_2.ui;
 
-import api.requests.steps.AdminSteps;
 import common.annotation.Browsers;
 import common.annotation.UserSession;
 import common.storage.SessionStorage;
+import common.utils.WaitUtils;
 import iteration_1.ui.BaseTestUI;
 import api.models.CreateAccountResponse;
 import api.models.GetAccountsResponse;
@@ -25,8 +25,6 @@ public class TransferMoneyTest extends BaseTestUI {
     @Browsers({"chrome"})
     @UserSession
     public void userCanTransferMoneyFromOneAccountToAnotherTest() {
-        //ПРЕДШАГИ на API:
-        //2.создаем два аккаунта(счета)
         CreateAccountResponse account1 = UserSteps.createAccount(SessionStorage.getUser());
         CreateAccountResponse account2 = UserSteps.createAccount(SessionStorage.getUser());
 
@@ -51,29 +49,12 @@ public class TransferMoneyTest extends BaseTestUI {
         GetAccountsResponse updateAcc2 = Arrays.stream(updateAccounts).filter(acc -> acc.getId() == account1.getId()).findAny().orElseThrow();
         assertThat(updateAcc2.getBalance()).isEqualTo((float) MAX_DEPOSIT);
 
-        //Шаги:
-        //1. Юзер нажал Make a Transfer
-        //2. Нажал Select Your Account и выбрал аккаунт с которого отправляет
-        //3. Нажал Recipient Name: и написал имя получателя(пусть имя будет номером аккаунта)
-        //4. Нажал Recipient Account Number: и написал номер аккаунта получателя
-        //5. Нажал Amount: Вписал сумму для перевода
-        //6. Поставил галочку Confirm details are correct  и кнопка send transfer
-        //7. Проверка, что деньги переведены на UI (Проверка алерта)
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        //Шаги теста:
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
         new TransferMoneyPage().open().transfer(createdAccount1.getAccountNumber(), createdAccount2.getAccountNumber(), MAX_DEPOSIT)
                 .checkAlertMessageAndAccept(BankAlerts.SUCCESSFULLY_TRANSFERRED.getMessage());
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
 
-
-        //2. Проверка после перевода, что баланс второго аккаунта соответствует переводу на API
         GetAccountsResponse[] updateAccountsAfterTransfer = UserSteps.getAccounts(SessionStorage.getUser());
         GetAccountsResponse updateAcc2AfterTransfer = Arrays.stream(updateAccountsAfterTransfer).filter(acc -> acc.getId() == account2.getId()).findAny().orElseThrow();
         assertThat(updateAcc2AfterTransfer.getBalance()).isEqualTo((float) MAX_DEPOSIT);
@@ -109,35 +90,16 @@ public class TransferMoneyTest extends BaseTestUI {
         depositMoney(account1.getId(), MAX_DEPOSIT, SessionStorage.getUser());
 
         //проверка, что деньги зачислены
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
         GetAccountsResponse[] updateAccounts = UserSteps.getAccounts(SessionStorage.getUser());
         GetAccountsResponse updateAcc2 = Arrays.stream(updateAccounts).filter(acc -> acc.getId() == account1.getId()).findAny().orElseThrow();
         assertThat(updateAcc2.getBalance()).isEqualTo((float) MAX_DEPOSIT);
 
-        //Шаги:
-        //1. Юзер нажал Make a Transfer
-        //2. Нажал Select Your Account и выбрал аккаунт с которого отправляет
-        //3. Нажал Recipient Name: и написал имя получателя(пусть имя будет номером аккаунта)
-        //4. Нажал Recipient Account Number: и написал номер аккаунта получателя
-        //5. Нажал Amount: Вписал сумму для перевода
-        //6. Поставил галочку Confirm details are correct  и кнопка send transfer
-        //7. Проверка, что деньги переведены на UI (Проверка алерта)
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        //Шаги теста:
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
         new TransferMoneyPage().open().transfer(account1.getAccountNumber(), account2.getAccountNumber(), INVALID_TRANSFER)
                 .checkAlertMessageAndAccept(BankAlerts.ERROR_TRANSFER_AMOUNT.getMessage());
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
 
         //2. Проверка после перевода, что баланс второго аккаунта остался равен 0 на API
         GetAccountsResponse[] updateAccountsAfterTransfer = UserSteps.getAccounts(SessionStorage.getUser());
@@ -147,7 +109,5 @@ public class TransferMoneyTest extends BaseTestUI {
         //баланс первого аккаунта остался прежний после неудачного перевода
         GetAccountsResponse updateAcc1AfterTransfer = Arrays.stream(updateAccountsAfterTransfer).filter(acc -> acc.getId() == account1.getId()).findAny().orElseThrow();
         assertThat(updateAcc1AfterTransfer.getBalance()).isEqualTo((float) MAX_DEPOSIT);
-
     }
-
 }

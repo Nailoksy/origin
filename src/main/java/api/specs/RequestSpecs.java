@@ -10,13 +10,11 @@ import api.models.LoginUserRequest;
 import api.requests.skelethon.requests.CrudRequester;
 import api.requests.skelethon.requests.Endpoint;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestSpecs {
-//    private static Map<String, String> authHeaders = new HashMap<>(Map.of("admin", "Basic YWRtaW46YWRtaW4="));
     private static final ConcurrentHashMap<String, String> authHeaders =
         new ConcurrentHashMap<>(
                 Map.of("admin", "Basic YWRtaW46YWRtaW4=")
@@ -59,26 +57,6 @@ public class RequestSpecs {
                 )
                 .build();
     }
-// (было)
-//public static String getUserAuthHeader(String username, String password) {
-//    String userAuthHeader;
-//
-//    if (!authHeaders.containsKey(username)) {
-//        userAuthHeader = new CrudRequester(
-//                RequestSpecs.unauthSpec(),
-//                Endpoint.LOGIN_USER,
-//                ResponseSpecs.requestReturnsOK())
-//                .post(LoginUserRequest.builder().username(username).password(password).build())
-//                .extract()
-//                .header("Authorization");
-//
-//        authHeaders.put(username, userAuthHeader);
-//    } else {
-//        userAuthHeader = authHeaders.get(username);
-//    }
-//
-//    return userAuthHeader;
-//}
 
     public static String getUserAuthHeader(String username, String password) {
         String token = authHeaders.get(username);

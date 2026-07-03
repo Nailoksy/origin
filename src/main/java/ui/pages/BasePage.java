@@ -7,13 +7,13 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
+import common.utils.WaitUtils;
 import org.openqa.selenium.Alert;
 import ui.elements.BaseElement;
 
 import java.util.List;
 import java.util.function.Function;
 
-import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,6 +44,7 @@ public abstract class BasePage <T extends BasePage>{
                 "authAsUser(" + username + ")",
                 () -> {
                     Selenide.open("/login");
+                    WaitUtils.sleep(WaitUtils.WAIT_FOR_UI);
                     String userAuthHeader = RequestSpecs.getUserAuthHeader(username, password);
                     executeJavaScript("localStorage.setItem('authToken', arguments[0]);", userAuthHeader);
                 }

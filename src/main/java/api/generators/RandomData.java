@@ -1,6 +1,7 @@
 package api.generators;
 
 import api.models.GetAllUsersResponse;
+import com.github.curiousoddman.rgxgen.RgxGen;
 import org.apache.commons.lang3.RandomStringUtils;
 import api.requests.steps.AdminSteps;
 
@@ -32,7 +33,6 @@ public class RandomData {
                 .orElseThrow();
 
         return maxId + 1;
-//        return Integer.MAX_VALUE;
     }
 
     public static int getRandomAmount(){
@@ -47,5 +47,12 @@ public class RandomData {
 
     public static String generateMinValidUsername() {
         return "TestUser_" + UUID.randomUUID().toString().substring(0, 6);
+    }
+
+    public static String generateCorrectName() {
+        return new RgxGen("[A-Z][a-z]{4,9} [A-Z][a-z]{4,9}").generate();
+    }
+    public static String generateInvalidName() {
+        return new RgxGen("[A-Z][a-z]{4,9}").generate();
     }
 }
