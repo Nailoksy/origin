@@ -32,6 +32,8 @@ public class DepositMoneyTest extends BaseTest {
 
         //создаем аккаунт(счет)
         CreateAccountResponse createdAccount = UserSteps.createAccount(userRequest);
+        System.out.println("ACCOUNT: " + createdAccount.getId());
+        System.out.println("USER: " + userRequest.getUsername());
 
         //получаем все аккаунты
         GetAccountsResponse[] accounts = UserSteps.getAccounts(userRequest);

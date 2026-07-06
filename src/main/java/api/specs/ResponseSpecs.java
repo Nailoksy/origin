@@ -16,6 +16,12 @@ public class ResponseSpecs {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
+    //без асерта, для удаления
+    public static ResponseSpecification noValidation() {
+        return defaultResponseBuilder()
+                .build();
+    }
+
     //200
     public static ResponseSpecification requestReturnsOK() {
         return defaultResponseBuilder()
@@ -59,9 +65,4 @@ public class ResponseSpecs {
                 .expectHeader(AUTHORIZATION_HEADER, (org.hamcrest.Matcher) Matchers.notNullValue())
                 .build();
     }
-
-
-
-
-
 }

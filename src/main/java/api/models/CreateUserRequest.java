@@ -18,6 +18,7 @@ public class CreateUserRequest extends BaseModel{
     private String password;
     @GeneratingRule(regex = "USER$")
     private String role;
+    private long id;
 
     public static CreateUserRequest getAdmin(){
         return CreateUserRequest.builder().username(Config.getProperty(Config.ADMIN_LOGIN)).password(Config.getProperty(Config.ADMIN_PASSWORD)).build();

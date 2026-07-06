@@ -1,5 +1,6 @@
 package ui.pages;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.SelenideElement;
 import lombok.Getter;
@@ -10,6 +11,7 @@ public class UserDashboardPage extends BasePage<UserDashboardPage>{
     private SelenideElement welcomeText = $(Selectors.byClassName("welcome-text"));
     private SelenideElement createNewAccountButton = $(Selectors.byText("➕ Create New Account"));
 
+
     @Override
     public String url() {
         return "/dashboard";
@@ -19,4 +21,11 @@ public class UserDashboardPage extends BasePage<UserDashboardPage>{
         createNewAccountButton.click();
         return this;
     }
+
+    public UserDashboardPage checkUserDashboardPageOpened() {
+        getWelcomeText()
+                .shouldBe(Condition.visible).shouldHave(Condition.text(LoginPage.NONAME_WELCOME_TEXT));
+        return this;
+    }
+
 }

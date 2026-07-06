@@ -3,13 +3,14 @@ package iteration_1.api;
 import api.models.CreateAccountResponse;
 import api.models.CreateUserRequest;
 import api.models.GetAccountsResponse;
+import common.annotation.UserSession;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
 
 public class CreateAccountTest extends BaseTest{
     @Test
-    public void userCanCreateAccountTest() {
+    public synchronized void userCanCreateAccountTest() {
         //создание пользователя
         CreateUserRequest userRequest = AdminSteps.createUser();
 

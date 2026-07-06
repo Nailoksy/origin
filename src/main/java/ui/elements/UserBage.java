@@ -12,7 +12,4 @@ public class UserBage extends BaseElement{
         username = element.getText().split("\n")[0];
         role = element.getText().split("\n")[1];
     }
-
-
-
 }

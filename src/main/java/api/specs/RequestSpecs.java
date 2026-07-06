@@ -10,55 +10,75 @@ import api.models.LoginUserRequest;
 import api.requests.skelethon.requests.CrudRequester;
 import api.requests.skelethon.requests.Endpoint;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestSpecs {
-    private static Map<String, String> authHeaders = new HashMap<>(Map.of("admin", "Basic YWRtaW46YWRtaW4="));
+    private static final ConcurrentHashMap<String, String> authHeaders =
+        new ConcurrentHashMap<>(
+                Map.of("admin", "Basic YWRtaW46YWRtaW4=")
+        );
 
-    private RequestSpecs(){}
+    private RequestSpecs() {
+    }
 
-    private static RequestSpecBuilder defaultRequestBuilder (){
+    private static RequestSpecBuilder defaultRequestBuilder() {
         return new RequestSpecBuilder()
                 .setContentType(ContentType.JSON)
                 .setAccept(ContentType.JSON)
                 .addFilters(
-                        List.of(new RequestLoggingFilter(),
-                                new ResponseLoggingFilter()))
-                .setBaseUri(Config.getProperty("apiBaseUrl") + Config.getProperty("apiVersion"));
+                        List.of(
+                                new RequestLoggingFilter(),
+                                new ResponseLoggingFilter()
+                        )
+                )
+                .setBaseUri(
+                        Config.getProperty("apiBaseUrl")
+                                + Config.getProperty("apiVersion")
+                );
     }
 
-    public static RequestSpecification unauthSpec(){
+    public static RequestSpecification unauthSpec() {
         return defaultRequestBuilder().build();
     }
 
-    public static RequestSpecification adminSpec(){
-        return defaultRequestBuilder().addHeader("Authorization", authHeaders.get("admin"))
+    public static RequestSpecification adminSpec() {
+        return defaultRequestBuilder()
+                .addHeader("Authorization", authHeaders.get("admin"))
                 .build();
     }
 
-    public static RequestSpecification authAsUser(String username, String password){
+    public static RequestSpecification authAsUser(String username, String password) {
         return defaultRequestBuilder()
-                .addHeader("Authorization", getUserAuthHeader(username, password))
+                .addHeader(
+                        "Authorization",
+                        getUserAuthHeader(username, password)
+                )
                 .build();
     }
 
     public static String getUserAuthHeader(String username, String password) {
-        String userAuthHeader;
-        if (!authHeaders.containsKey(username)) {
-            userAuthHeader = new CrudRequester(
-                    RequestSpecs.unauthSpec(),
-                    Endpoint.LOGIN_USER,
-                    ResponseSpecs.requestReturnsOK())
-                    .post(LoginUserRequest.builder().username(username).password(password).build())
-                    .extract()
-                    .header("Authorization");
-            authHeaders.put(username, userAuthHeader);
-        } else {
-            userAuthHeader = authHeaders.get(username);
+        String token = authHeaders.get(username);
+        if (token == null) {
+            synchronized (RequestSpecs.class) {
+                token = authHeaders.get(username);
+                if (token == null) {
+                    token = new CrudRequester(
+                            RequestSpecs.unauthSpec(),
+                            Endpoint.LOGIN_USER,
+                            ResponseSpecs.requestReturnsOK()
+                    )
+                            .post(LoginUserRequest.builder()
+                                    .username(username)
+                                    .password(password)
+                                    .build())
+                            .extract()
+                            .header("Authorization");
+                    authHeaders.put(username, token);
+                }
+            }
         }
-        return userAuthHeader;
+        return token;
     }
-
 }

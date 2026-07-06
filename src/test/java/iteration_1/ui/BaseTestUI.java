@@ -21,6 +21,7 @@ public class BaseTestUI extends BaseTest {
         Configuration.baseUrl = Config.getProperty("uiBaseUrl");
         Configuration.browser = Config.getProperty("uiBrowser");
         Configuration.browserSize = Config.getProperty("uiBrowserSize");
+        Configuration.headless = false;
 
         Configuration.browserCapabilities.setCapability("selenoid:options",
                 Map.of("enableVNC", true, "enableLog", true)

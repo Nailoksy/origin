@@ -14,7 +14,9 @@ public final class SystemFailureDetector {
     public static boolean isRetryable(Throwable throwable) {
         Throwable current = throwable;
         while (current != null) {
-            if (isInfrastructureException(current) || isServerErrorAssertion(current)) {
+            if (isInfrastructureException(current)
+                    || isServerErrorAssertion(current)
+                    || isSelenideFlakyFailure(current)) {
                 return true;
             }
             current = current.getCause();
@@ -30,6 +32,7 @@ public final class SystemFailureDetector {
         String className = throwable.getClass().getName();
         return className.contains("TimeoutException")
                 || className.contains("WebDriverException")
+                || className.contains("AlertException")
                 || className.contains("SessionNotCreatedException")
                 || className.contains("UnreachableBrowserException");
     }
@@ -37,5 +40,9 @@ public final class SystemFailureDetector {
     private static boolean isServerErrorAssertion(Throwable throwable) {
         String message = throwable.getMessage();
         return message != null && SERVER_ERROR_STATUS.matcher(message).find();
+    }
+
+    private static boolean isSelenideFlakyFailure(Throwable throwable) {
+        return throwable.getClass().getName().startsWith("com.codeborne.selenide.ex.");
     }
 }

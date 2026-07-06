@@ -2,9 +2,9 @@ package common.extensions;
 
 import api.models.CreateUserRequest;
 import api.requests.steps.AdminSteps;
-import api.requests.steps.UserSteps;
 import common.annotation.UserSession;
 import common.storage.SessionStorage;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import ui.pages.BasePage;
@@ -12,7 +12,7 @@ import ui.pages.BasePage;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UserSessionExtension implements BeforeEachCallback {
+public class UserSessionExtension implements BeforeEachCallback, AfterEachCallback {
     @Override
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
         //ШАГ 1: Проверка, что у теста есть аннотация UserSession
@@ -24,7 +24,7 @@ public class UserSessionExtension implements BeforeEachCallback {
 
             List<CreateUserRequest> users = new LinkedList<>();
 
-            for (int i = 0; i < userCount; i++){
+            for (int i = 0; i < userCount; i++) {
                 CreateUserRequest user = AdminSteps.createUser();
                 users.add(user);
 
@@ -34,6 +34,16 @@ public class UserSessionExtension implements BeforeEachCallback {
             int authAsUser = annotation.auth();
 
             BasePage.authAsUser(SessionStorage.getUser(authAsUser));
+        }
+    }
+
+    @Override
+    public void afterEach(ExtensionContext extensionContext) throws Exception {
+        UserSession annotation = extensionContext.getRequiredTestMethod().getAnnotation(UserSession.class);
+
+        if (annotation != null && !SessionStorage.isEmpty()) {
+            SessionStorage.deleteAllUsers();
+            SessionStorage.clear();
         }
     }
 }
