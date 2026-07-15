@@ -1,0 +1,17 @@
+services:
+  backend:
+    image: nobugsme/nbank:with_validation_fix
+    container_name: nbank-backend
+    ports:
+      - "4111:4111"
+    networks:
+      - nbank-network
+
+networks:
+  nbank-network:
+    name: nbank-network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
