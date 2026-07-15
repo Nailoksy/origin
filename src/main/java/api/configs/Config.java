@@ -22,7 +22,10 @@ public class Config {
         }
     }
 
-    public static String getProperty (String key){
-        return INSTANCE.properties.getProperty(key);
-    }
+//    public static String getProperty (String key){
+//        return INSTANCE.properties.getProperty(key);
+//    }
+public static String getProperty(String key) {
+    return System.getProperty(key, INSTANCE.properties.getProperty(key));
+}
 }
