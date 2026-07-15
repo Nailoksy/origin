@@ -1,16 +1,43 @@
+version: '3.8'
+
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: nbank-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: nbank
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nbank"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   backend:
-    image: nobugsme/nbank:with_validation_fix
+    image: nobugsme/nbank:with_database_with_fix
     container_name: nbank-backend
     ports:
       - "4111:4111"
-    networks:
-      - nbank-network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/nbank
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SERVER_PORT: 4111
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
 networks:
-  nbank-network:
+  default:
     name: nbank-network
-    driver: bridge
 
 volumes:
   postgres_data:
