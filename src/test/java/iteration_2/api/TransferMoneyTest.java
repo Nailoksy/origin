@@ -21,7 +21,9 @@ import api.specs.ResponseSpecs;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import static api.requests.steps.UserSteps.depositMoney;
+import org.junit.jupiter.api.Tag;
 
+@Tag("api")
 public class TransferMoneyTest extends BaseTest {
     private static final double MAX_DEPOSIT = 5000;
     private static final double TOTAL_TRANSFER = 15000;

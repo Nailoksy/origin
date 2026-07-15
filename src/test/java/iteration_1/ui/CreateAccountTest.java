@@ -5,6 +5,7 @@ import common.annotation.Browsers;
 import common.annotation.UserSession;
 import common.storage.SessionStorage;
 import common.utils.WaitUtils;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import ui.pages.BankAlerts;
 import ui.pages.UserDashboardPage;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("ui")
 public class CreateAccountTest extends BaseTestUI {
     @Test
     @Browsers({"chrome"})

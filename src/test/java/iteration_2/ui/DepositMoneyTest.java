@@ -6,6 +6,7 @@ import common.storage.SessionStorage;
 import common.utils.WaitUtils;
 import iteration_1.ui.BaseTestUI;
 import api.models.GetAccountsResponse;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.UserSteps;
 import ui.pages.BankAlerts;
@@ -13,6 +14,7 @@ import ui.pages.DepositPage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("ui")
 public class DepositMoneyTest extends BaseTestUI {
     private static final double AMOUNT_FOR_DEPOSIT = 100;
     private static final double TOTAL_DEPOSIT = 5000;

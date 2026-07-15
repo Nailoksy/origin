@@ -8,6 +8,7 @@ import api.models.CreateUserRequest;
 import api.models.comparison.ModelAssertions;
 import common.annotation.AdminSession;
 import common.annotation.Browsers;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import ui.elements.UserBage;
 import ui.pages.AdminPanelPage;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("ui")
 public class CreateUserTest extends BaseTestUI {
     @Test
     @Browsers({"chrome"})

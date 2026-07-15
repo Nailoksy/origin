@@ -7,7 +7,9 @@ import common.annotation.UserSession;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;
 import api.requests.steps.UserSteps;
+import org.junit.jupiter.api.Tag;
 
+@Tag("api")
 public class CreateAccountTest extends BaseTest{
     @Test
     public synchronized void userCanCreateAccountTest() {

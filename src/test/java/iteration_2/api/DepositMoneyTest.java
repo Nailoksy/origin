@@ -21,7 +21,9 @@ import api.specs.ResponseSpecs;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Tag;
 
+@Tag("api")
 public class DepositMoneyTest extends BaseTest {
 
     @ParameterizedTest

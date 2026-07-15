@@ -18,7 +18,9 @@ import api.specs.ResponseSpecs;
 
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Tag;
 
+@Tag("api")
 public class CreateUserTest extends BaseTest {
 
     public static Stream<Arguments> userValidData() {

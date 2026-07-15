@@ -18,7 +18,9 @@ import api.specs.ResponseSpecs;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Tag;
 
+@Tag("api")
 public class UpdateNameTest extends BaseTest {
     @ParameterizedTest
     @ValueSource(strings = {"New Name", "new name"})

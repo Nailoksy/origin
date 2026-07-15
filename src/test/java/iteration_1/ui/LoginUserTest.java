@@ -4,11 +4,13 @@ import api.models.CreateUserRequest;
 import common.annotation.Browsers;
 import common.annotation.UserSession;
 import common.storage.SessionStorage;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import ui.pages.AdminPanelPage;
 import ui.pages.LoginPage;
 import ui.pages.UserDashboardPage;
 
+@Tag("ui")
 public class LoginUserTest extends BaseTestUI {
     @Test
     @Browsers({"chrome"})

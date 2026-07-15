@@ -9,6 +9,7 @@ import common.storage.SessionStorage;
 import common.utils.WaitUtils;
 import iteration_1.ui.BaseTestUI;
 import api.models.GetAllUsersResponse;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.AdminSteps;
 import org.junit.jupiter.api.parallel.ResourceAccessMode;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.junit.jupiter.api.parallel.Resources;
 
+@Tag("ui")
 public class UpdateNameTest extends BaseTestUI {
     private final String NEW_NAME_CORRECT = RandomData.generateCorrectName();
     private final String INVALID_NAME = RandomData.generateInvalidName();

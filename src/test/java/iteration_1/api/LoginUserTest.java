@@ -12,7 +12,9 @@ import api.requests.steps.AdminSteps;
 import api.specs.RequestSpecs;
 import api.specs.ResponseSpecs;
 
+import org.junit.jupiter.api.Tag;
 
+@Tag("api")
 public class LoginUserTest extends BaseTest {
     @Test
     public void adminCanGenerateAuthTokenTest() {

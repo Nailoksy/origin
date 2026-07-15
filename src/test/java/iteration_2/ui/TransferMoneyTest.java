@@ -7,6 +7,7 @@ import common.utils.WaitUtils;
 import iteration_1.ui.BaseTestUI;
 import api.models.CreateAccountResponse;
 import api.models.GetAccountsResponse;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import api.requests.steps.UserSteps;
 import ui.pages.BankAlerts;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 import static api.requests.steps.UserSteps.depositMoney;
 
+@Tag("ui")
 public class TransferMoneyTest extends BaseTestUI {
     private static final double MAX_DEPOSIT = 5000;
     private static final double INVALID_TRANSFER = -1;
